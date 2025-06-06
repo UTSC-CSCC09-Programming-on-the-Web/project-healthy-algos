@@ -1,9 +1,9 @@
 # Nutrigram
 
 ## Members
-- Donghyun (Eric) Kweon: eric.kweon@mail.utoronto.ca | kweondo1
+- Donghyun (Eric) Kweon | eric.kweon@mail.utoronto.ca | kweondo1
 - Samuel Mantilla | samuel.mantilla@mail.utoronto.ca | mantil11
-- 
+- Arick Liu | arick.liu@mail.utoronto.ca | liuarick
 
 ## Description
 Nutrigram is a full-stack web application that aims to help users direct them to maintaining a healthy diet by allowing them to upload and manage their favourite recipes. 
