@@ -2,7 +2,7 @@
 
 ## Members
 - Donghyun (Eric) Kweon: eric.kweon@mail.utoronto.ca
-- Samuel Mantilla: samuel.mantilla@mail.utoronto.ca
+- Samuel Mantilla | samuel.mantilla@mail.utoronto.ca | mantil11
 - 
 
 ## Description
