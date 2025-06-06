@@ -13,7 +13,7 @@ It will encourage users to track their calorie intake and discover recipes share
 - ReactJs + react router
 
 ## Additional Requirements
-- Uploads posted by friends will be displayed in a separate tab on a global explorer page, where friends' newest recipes will reflect the user's feed.
+- Uploads posted by friends will be displayed in a separate tab on a global explorer page, where friends' newest recipes will reflect the user's feed. This can be achieved by establishing a communication via websocket.
 - If time allows, a backend AI model will be implemented to score the user's uploaded recipes according to a health metric.
 
 ## Version Milestones
