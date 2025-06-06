@@ -1,7 +1,7 @@
 # Nutrigram
 
 ## Members
-- Donghyun (Eric) Kweon: eric.kweon@mail.utoronto.ca
+- Donghyun (Eric) Kweon: eric.kweon@mail.utoronto.ca | kweondo1
 - Samuel Mantilla | samuel.mantilla@mail.utoronto.ca | mantil11
 - 
 
