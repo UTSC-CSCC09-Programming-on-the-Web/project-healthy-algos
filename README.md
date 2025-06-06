@@ -2,7 +2,7 @@
 
 ## Members
 - Donghyun (Eric) Kweon: eric.kweon@mail.utoronto.ca
-- 
+- Samuel Mantilla: samuel.mantilla@mail.utoronto.ca
 - 
 
 ## Description
@@ -17,6 +17,6 @@ It will encourage users to track their calorie intake and discover recipes share
 - If time allows, a backend AI model will be implemented to score the user's uploaded recipes according to a health metric.
 
 ## Version Milestones
-- Apha: aim to complete the design and implementation of the main frontend portion of the application
+- Alpha: aim to complete the design and implementation of the main frontend portion of the application
 - Beta: integrate the backend and implement the basic features related to users - signup, payment, signout and upload content
 - Final: aim to complete the features detailed in the "Additional Requirements" section and have it deployed
