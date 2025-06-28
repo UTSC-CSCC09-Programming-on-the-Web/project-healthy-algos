@@ -1,4 +1,4 @@
-# ISim (Tentative)
+# ISim
 
 ## Members
 - Donghyun (Eric) Kweon | eric.kweon@mail.utoronto.ca | kweondo1
@@ -20,7 +20,7 @@ Players will be able to interact and converse with the AI agents, influencing th
 ## Version Milestones
 - Alpha: aim to complete user login and stripe, as well as a basic plane and agent sprites (and potentially player movement)
 - Beta: implement basic task queue and AI powered agents
-- Final: increase AI action choices and increase dynamic player interaction
+- Final: increase AI action choices and increase dynamic player interaction + deployment
 
 ## Starting the backend
 1. `cd backend`
