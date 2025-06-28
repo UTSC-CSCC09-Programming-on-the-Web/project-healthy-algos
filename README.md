@@ -6,8 +6,9 @@
 - Arick Liu | arick.liu@mail.utoronto.ca | liuarick
 
 ## Description
-Web-based simulation application in which AI powered agents will roam a 2-dimensional plane and interact with the environment. 
-Players will be able to interact and converse with the AI agents, influencing the AI to take different actions.
+A sandbox-style simulation with 4 autonomous AI agents and a player that co-exist and interact in real-time on a 2D plane. 
+Bots behave realistically with respect to unique personalities and perform actions at intervals, controlled by a language model. 
+Players wilkl be able to talk to, and influence the bots using communication mechanisms.
 
 ## Frontend Framework
 - ReactJs + react router
@@ -19,7 +20,7 @@ Players will be able to interact and converse with the AI agents, influencing th
 
 ## Version Milestones
 - Alpha: aim to complete user login and stripe, as well as a basic plane and agent sprites (and potentially player movement)
-- Beta: implement basic task queue and AI powered agents
+- Beta: implement basic task queue and AI powered agents (polling task queue in intervals of 30 seconds) with a LLM API and communication mechanism
 - Final: increase AI action choices and increase dynamic player interaction + deployment
 
 ## Starting the backend
