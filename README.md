@@ -1,4 +1,4 @@
-# Nutrigram
+# ISim (Tentative)
 
 ## Members
 - Donghyun (Eric) Kweon | eric.kweon@mail.utoronto.ca | kweondo1
@@ -6,20 +6,21 @@
 - Arick Liu | arick.liu@mail.utoronto.ca | liuarick
 
 ## Description
-Nutrigram is a full-stack web application that aims to help users direct them to maintaining a healthy diet by allowing them to upload and manage their favourite recipes. 
-It will encourage users to track their calorie intake and discover recipes shared by other users. As well as allow users to share their recipes privately to their friends.
+Web-based simulation application in which AI powered agents will roam a 2-dimensional plane and interact with the environment. 
+Players will be able to interact and converse with the AI agents, influencing the AI to take different actions.
 
 ## Frontend Framework
 - ReactJs + react router
 
 ## Additional Requirements
-- Uploads posted by friends will be displayed in a separate tab on a global explorer page, where friends' newest recipes will reflect the user's feed. This can be achieved by establishing a communication via websocket.
-- If time allows, a backend AI model will be implemented to score the user's uploaded recipes according to a health metric.
+- AI movement and player movement will be updated live without the need to refresh
+- A parallel task queue will calculate AI decisions and actions
+- If time allows, we will implement proximity-based voice chat to converse with the AI
 
 ## Version Milestones
-- Alpha: aim to complete the design and implementation of the main frontend portion of the application
-- Beta: integrate the backend and implement the basic features related to users - signup, payment, signout and upload content
-- Final: aim to complete the features detailed in the "Additional Requirements" section and have it deployed
+- Alpha: aim to complete user login and stripe, as well as a basic plane and agent sprites (and potentially player movement)
+- Beta: implement basic task queue and AI powered agents
+- Final: increase AI action choices and increase dynamic player interaction
 
 ## Starting the backend
 1. `cd backend`
