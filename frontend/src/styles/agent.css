@@ -1,0 +1,22 @@
+.agent {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  font-size: 24px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.circle {
+  width: 32px;
+  height: 32px;
+  background-color: royalblue;
+  border-radius: 50%;
+  border: 2px solid black;
+}
+
+.name {
+  font-size: 0.6rem;
+  text-align: center;
+  color: black;
+}
