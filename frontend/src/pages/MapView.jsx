@@ -50,7 +50,8 @@ export default function MapView() {
           k.sprite("player_base"),
           k.pos(400, 300),
           k.anchor("center"),
-          k.scale(2), 
+          k.scale(2),
+          k.area({ width: 12, height: 16, offset: k.vec2(-5, 0) }),
         ])
 
         const playerHair = k.add([
@@ -81,21 +82,27 @@ export default function MapView() {
             playerBase.move(moveX * MOVE_SPEED, moveY * MOVE_SPEED)
             playerHair.move(moveX * MOVE_SPEED, moveY * MOVE_SPEED)
           }
-          if (playerBase.pos.x < 0) {
-            playerBase.pos.x = 0
-            playerHair.pos.x = 0
+
+          // Calculate scaled sprite boundaries
+          const collisionWidth = (12 * 2) / 2 
+          const collisionHeight = (16 * 2) / 2 
+
+          // Keep player within canvas bounds using tight collision box
+          if (playerBase.pos.x - collisionWidth < 0) {
+            playerBase.pos.x = collisionWidth
+            playerHair.pos.x = collisionWidth
           }
-          if (playerBase.pos.x > 800) {
-            playerBase.pos.x = 800
-            playerHair.pos.x = 800
+          if (playerBase.pos.x + collisionWidth > 800) {
+            playerBase.pos.x = 800 - collisionWidth
+            playerHair.pos.x = 800 - collisionWidth
           }
-          if (playerBase.pos.y < 0) {
-            playerBase.pos.y = 0
-            playerHair.pos.y = 0
+          if (playerBase.pos.y - collisionHeight < 0) {
+            playerBase.pos.y = collisionHeight
+            playerHair.pos.y = collisionHeight
           }
-          if (playerBase.pos.y > 600) {
-            playerBase.pos.y = 600
-            playerHair.pos.y = 600
+          if (playerBase.pos.y + collisionHeight > 600) {
+            playerBase.pos.y = 600 - collisionHeight
+            playerHair.pos.y = 600 - collisionHeight
           }
         })
       })
