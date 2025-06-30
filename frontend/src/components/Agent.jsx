@@ -1,4 +1,4 @@
-import '../styles/agent.css'
+import '../styles/Agent.css'
 
 export default function Agent({ name, x, y }) {
   return (

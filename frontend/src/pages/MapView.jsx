@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Agent from '../components/Agent'
-import '../styles/map.css'
+import '../styles/Map.css'
 
 export default function MapView() {
   const [playerPos, setPlayerPos] = useState({ x: 5, y: 5 })
