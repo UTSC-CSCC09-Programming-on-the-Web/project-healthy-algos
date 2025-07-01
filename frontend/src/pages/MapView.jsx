@@ -2,10 +2,14 @@ import { useEffect, useRef } from 'react'
 import kaplay from 'kaplay'
 import '../styles/Map.css'
 
-const MOVE_SPEED = 200
-const MAP_WIDTH = 720  
-const MAP_HEIGHT = 560 
-const SCALE = 3      
+import { GAME_CONFIG } from '../config/gameConfig'
+import { AssetLoader } from '../systems/AssetLoader'
+import { MovementSystem } from '../systems/MovementSystem'
+import { InputSystem } from '../systems/InputSystem'
+import { CollisionSystem } from '../systems/CollisionSystem'
+import { CameraSystem } from '../systems/CameraSystem'
+
+import { Player } from '../entities/Player'
 
 export default function MapView() {
   const canvasRef = useRef(null)
@@ -14,112 +18,40 @@ export default function MapView() {
   useEffect(() => {
     const k = kaplay({
       canvas: canvasRef.current,
-      width: 800,
-      height: 600,
-      background: [135, 206, 235]
+      width: GAME_CONFIG.CANVAS_WIDTH,
+      height: GAME_CONFIG.CANVAS_HEIGHT,
+      background: GAME_CONFIG.BACKGROUND_COLOR
     })
 
     gameRef.current = k
 
-    k.loadSprite("map_background", "/assets/Sunnyside/Maps/map.png")
+    const assetLoader = new AssetLoader(k)
+    const movementSystem = new MovementSystem()
+    const inputSystem = new InputSystem(k)
+    const collisionSystem = new CollisionSystem()
+    const cameraSystem = new CameraSystem(k)
 
-    k.loadSprite("player_base", "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png", {
-      sliceX: 9, 
-      sliceY: 1, 
-      anims: {
-        idle: {
-          from: 0,
-          to: 8,
-          speed: 8,
-          loop: true
-        }
-      }
-    })
-
-    k.loadSprite("player_hair", "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png", {
-      sliceX: 9, 
-      sliceY: 1, 
-      anims: {
-        idle: {
-          from: 0,
-          to: 8,
-          speed: 8,
-          loop: true
-        }
-      }
-    })
+    assetLoader.loadAllAssets()
 
     k.onLoad(() => {
       k.scene("main", () => {
         k.add([
           k.sprite("map_background"),
           k.pos(0, 0),
-          k.scale(SCALE),
+          k.scale(GAME_CONFIG.MAP_SCALE),
         ])
 
-        const playerBase = k.add([
-          k.sprite("player_base"),
-          k.pos((MAP_WIDTH * SCALE) / 2, (MAP_HEIGHT * SCALE) / 2), 
-          k.anchor("center"),
-          k.scale(SCALE),
-          k.area({ width: 12, height: 16, offset: k.vec2(-5, 0) }),
-        ])
+        const player = new Player(k)
+        player.createSprites()
 
-        const playerHair = k.add([
-          k.sprite("player_hair"),
-          k.pos((MAP_WIDTH * SCALE) / 2, (MAP_HEIGHT * SCALE) / 2), 
-          k.anchor("center"),
-          k.scale(SCALE), 
-        ])
-
-        playerBase.play("idle")
-        playerHair.play("idle")
+        // Camera follows player
+        cameraSystem.setTarget(player.getMainSprite())
 
         k.onUpdate(() => {
-          let moveX = 0
-          let moveY = 0
-
-          if (k.isKeyDown("left") || k.isKeyDown("a")) moveX -= 1
-          if (k.isKeyDown("right") || k.isKeyDown("d")) moveX += 1
-          if (k.isKeyDown("up") || k.isKeyDown("w")) moveY -= 1
-          if (k.isKeyDown("down") || k.isKeyDown("s")) moveY += 1
-          
-          // Normalize diagonal movement to maintain consistent speed
-          if (moveX !== 0 && moveY !== 0) {
-            moveX *= 0.707 // 1/√2 ≈ 0.707
-            moveY *= 0.707
-          }
-          if (moveX !== 0 || moveY !== 0) {
-            playerBase.move(moveX * MOVE_SPEED, moveY * MOVE_SPEED)
-            playerHair.move(moveX * MOVE_SPEED, moveY * MOVE_SPEED)
-          }
-
-          // Calculate sprite boundaries
-          const collisionWidth = 12 / 2 
-          const collisionHeight = 16 / 2 
-
-          // Ensure player stays within map boundaries
-          const scaledMapWidth = MAP_WIDTH * SCALE
-          const scaledMapHeight = MAP_HEIGHT * SCALE
-          
-          if (playerBase.pos.x - collisionWidth < 0) {
-            playerBase.pos.x = collisionWidth
-            playerHair.pos.x = collisionWidth
-          }
-          if (playerBase.pos.x + collisionWidth > scaledMapWidth) {
-            playerBase.pos.x = scaledMapWidth - collisionWidth
-            playerHair.pos.x = scaledMapWidth - collisionWidth
-          }
-          if (playerBase.pos.y - collisionHeight < 0) {
-            playerBase.pos.y = collisionHeight
-            playerHair.pos.y = collisionHeight
-          }
-          if (playerBase.pos.y + collisionHeight > scaledMapHeight) {
-            playerBase.pos.y = scaledMapHeight - collisionHeight
-            playerHair.pos.y = scaledMapHeight - collisionHeight
-          }
-
-          k.setCamPos(playerBase.pos)
+          const { moveX, moveY } = inputSystem.getMovementInput()
+          movementSystem.moveSprites(player.getAllSprites(), moveX, moveY)
+          collisionSystem.constrainToMapBounds(player.getAllSprites())
+          cameraSystem.update()
         })
       })
       k.go("main")
