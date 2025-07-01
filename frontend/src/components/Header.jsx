@@ -5,7 +5,7 @@ export default function Header() {
   return (
     <header className="header">
       <h1>
-        <Link to="/">Healthy Algos</Link>
+        <Link to="/">ISim</Link>
         {/* Currently don't have a page to route to at '/', but we'll design landing page separately */}
       </h1>
     </header>
