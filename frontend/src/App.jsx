@@ -1,25 +1,29 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './styles/App.css'
-import AppRouter from './routes/AppRouter'
+import { useState, useEffect } from 'react';
+import './styles/App.css';
+import AppRouter from './routes/AppRouter';
 
 function App() {
-  const [count, setCount] = useState(0)
-  return <AppRouter />
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/auth/me', {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const userData = await res.json();
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error('Not logged in');
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  return <AppRouter user={user} setUser={setUser} />;
 }
 
-export default App
-
-// import AppRouter from './routes/AppRouter'
-
-// function App() {
-//   return (
-//     <>
-//       <div style={{ color: 'red' }}>Hello from App.jsx</div>
-//       <AppRouter />
-//     </>
-//   );
-// }
-
-// export default App
+export default App;

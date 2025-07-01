@@ -32,7 +32,8 @@ router.get('/me', (req, res) => {
 // Logout
 router.get('/logout', (req, res) => {
   req.logout(() => {
-    res.redirect('http://localhost:5173/login');
+    res.clearCookie('connect.sid'); // Optional: clear session cookie
+    res.status(200).json({ message: 'Logged out' });
   });
 });
 
