@@ -3,6 +3,9 @@ import kaplay from 'kaplay'
 import '../styles/Map.css'
 
 const MOVE_SPEED = 200
+const MAP_WIDTH = 720  
+const MAP_HEIGHT = 560 
+const SCALE = 3      
 
 export default function MapView() {
   const canvasRef = useRef(null)
@@ -17,6 +20,8 @@ export default function MapView() {
     })
 
     gameRef.current = k
+
+    k.loadSprite("map_background", "/assets/Sunnyside/Maps/map.png")
 
     k.loadSprite("player_base", "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png", {
       sliceX: 9, 
@@ -46,19 +51,25 @@ export default function MapView() {
 
     k.onLoad(() => {
       k.scene("main", () => {
+        k.add([
+          k.sprite("map_background"),
+          k.pos(0, 0),
+          k.scale(SCALE),
+        ])
+
         const playerBase = k.add([
           k.sprite("player_base"),
-          k.pos(400, 300),
+          k.pos((MAP_WIDTH * SCALE) / 2, (MAP_HEIGHT * SCALE) / 2), 
           k.anchor("center"),
-          k.scale(2),
+          k.scale(SCALE),
           k.area({ width: 12, height: 16, offset: k.vec2(-5, 0) }),
         ])
 
         const playerHair = k.add([
           k.sprite("player_hair"),
-          k.pos(400, 300),
+          k.pos((MAP_WIDTH * SCALE) / 2, (MAP_HEIGHT * SCALE) / 2), 
           k.anchor("center"),
-          k.scale(2), 
+          k.scale(SCALE), 
         ])
 
         playerBase.play("idle")
@@ -83,27 +94,32 @@ export default function MapView() {
             playerHair.move(moveX * MOVE_SPEED, moveY * MOVE_SPEED)
           }
 
-          // Calculate scaled sprite boundaries
-          const collisionWidth = (12 * 2) / 2 
-          const collisionHeight = (16 * 2) / 2 
+          // Calculate sprite boundaries
+          const collisionWidth = 12 / 2 
+          const collisionHeight = 16 / 2 
 
-          // Keep player within canvas bounds using tight collision box
+          // Ensure player stays within map boundaries
+          const scaledMapWidth = MAP_WIDTH * SCALE
+          const scaledMapHeight = MAP_HEIGHT * SCALE
+          
           if (playerBase.pos.x - collisionWidth < 0) {
             playerBase.pos.x = collisionWidth
             playerHair.pos.x = collisionWidth
           }
-          if (playerBase.pos.x + collisionWidth > 800) {
-            playerBase.pos.x = 800 - collisionWidth
-            playerHair.pos.x = 800 - collisionWidth
+          if (playerBase.pos.x + collisionWidth > scaledMapWidth) {
+            playerBase.pos.x = scaledMapWidth - collisionWidth
+            playerHair.pos.x = scaledMapWidth - collisionWidth
           }
           if (playerBase.pos.y - collisionHeight < 0) {
             playerBase.pos.y = collisionHeight
             playerHair.pos.y = collisionHeight
           }
-          if (playerBase.pos.y + collisionHeight > 600) {
-            playerBase.pos.y = 600 - collisionHeight
-            playerHair.pos.y = 600 - collisionHeight
+          if (playerBase.pos.y + collisionHeight > scaledMapHeight) {
+            playerBase.pos.y = scaledMapHeight - collisionHeight
+            playerHair.pos.y = scaledMapHeight - collisionHeight
           }
+
+          k.setCamPos(playerBase.pos)
         })
       })
       k.go("main")
