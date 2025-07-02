@@ -6,6 +6,9 @@ import Header from '../components/Header';
 import WorldPage from '../pages/WorldPage';
 import SubscriptionPage from '../pages/SubscriptionPage';
 import SuccessPage from '../pages/SuccessPage';
+import MapView from '../pages/MapView'
+import Credits from '../pages/Credits'
+import Footer from '../components/Footer'
 
 export default function AppRouter({ user, setUser }) {
   return (
@@ -17,6 +20,8 @@ export default function AppRouter({ user, setUser }) {
         <Route path="/world" element={<WorldPage />} />
         <Route path="/subscribe" element={<SubscriptionPage />} />
         <Route path="/success" element={<SuccessPage />} />
+        {/* <Route path="/world" element={<MapView />} />  */}
+        <Route path="/credits" element={<Credits />} />{/* Login, checkout, profile, etc. */}
       </Routes>
     </BrowserRouter>
   );

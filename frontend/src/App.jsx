@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './styles/App.css';
 import AppRouter from './routes/AppRouter';
 
+// Router setup for the application
 function App() {
   const [user, setUser] = useState(null);
 
