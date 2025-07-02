@@ -4,6 +4,7 @@ import session from "express-session";
 import passport from "passport";
 import "./services/oauthService.js";
 import authRoutes from "./routes/authRoutes.js";
+import protectedRoutes from './routes/protectedRoutes.js';
 
 export const app = express();
 
@@ -23,6 +24,7 @@ app.use(passport.session());
 
 app.use('/api/auth', authRoutes);
 
+app.use('/api', protectedRoutes);
 
 const PORT = process.env.PORT || 3000;
 
