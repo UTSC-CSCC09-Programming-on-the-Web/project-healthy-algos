@@ -18,8 +18,8 @@ export async function initializeDatabase() {
     `;
 
     await pool.query(createUsersTableQuery);
-    console.log('✅ users table checked/created');
+    console.log('Users table checked/created');
   } catch (err) {
-    console.error('❌ Failed to initialize database:', err);
+    console.error('Failed to initialize database:', err);
   }
 }

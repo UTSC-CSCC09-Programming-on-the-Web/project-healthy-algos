@@ -29,12 +29,12 @@ export async function createDatabaseIfNotExists() {
     if (checkRes.rowCount === 0) {
       console.log(`🔧 Creating database "${targetDbName}"...`);
       await adminClient.query(`CREATE DATABASE ${targetDbName}`);
-      console.log(`✅ Database "${targetDbName}" created.`);
+      console.log(`Database "${targetDbName}" created.`);
     } else {
-      console.log(`✅ Database "${targetDbName}" already exists.`);
+      console.log(`Database "${targetDbName}" already exists.`);
     }
   } catch (err) {
-    console.error('❌ Error creating database:', err);
+    console.error('Error creating database:', err);
   } finally {
     await adminClient.end();
   }
