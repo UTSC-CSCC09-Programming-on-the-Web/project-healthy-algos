@@ -6,33 +6,40 @@ import "./services/oauthService.js";
 import authRoutes from "./routes/authRoutes.js";
 import protectedRoutes from './routes/protectedRoutes.js';
 import stripeRoutes from './routes/stripeRoutes.js';
+import { initializeDatabase } from './initDb.js';
+import { createDatabaseIfNotExists } from './createDatabase.js';
 
-export const app = express();
+(async () => {
+  await createDatabaseIfNotExists();
+  const app = express();
+  await initializeDatabase();
 
-app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+  app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
+  app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+  }));
 
-app.use(session({
-  secret: 'your-session-secret', // replace in production
-  resave: false,
-  saveUninitialized: false
-}));
+  app.use(session({
+    secret: 'your-session-secret', // replace in production
+    resave: false,
+    saveUninitialized: false
+  }));
 
-app.use(passport.initialize());
-app.use(passport.session());
+  app.use(passport.initialize());
+  app.use(passport.session());
 
-app.use('/api/auth', authRoutes);
+  app.use('/api/auth', authRoutes);
 
-app.use('/api', protectedRoutes);
+  app.use('/api', protectedRoutes);
 
-app.use('/api/stripe', stripeRoutes);
+  app.use('/api/stripe', stripeRoutes);
 
-const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
+
+})();
