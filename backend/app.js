@@ -5,8 +5,11 @@ import passport from "passport";
 import "./services/oauthService.js";
 import authRoutes from "./routes/authRoutes.js";
 import protectedRoutes from './routes/protectedRoutes.js';
+import stripeRoutes from './routes/stripeRoutes.js';
 
 export const app = express();
+
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -25,6 +28,8 @@ app.use(passport.session());
 app.use('/api/auth', authRoutes);
 
 app.use('/api', protectedRoutes);
+
+app.use('/api/stripe', stripeRoutes);
 
 const PORT = process.env.PORT || 3000;
 
