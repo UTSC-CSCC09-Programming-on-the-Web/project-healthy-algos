@@ -1,0 +1,42 @@
+.login-page {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to right, #242424, #1a1a1a);
+}
+
+.login-container {
+  background-color: #fff;
+  color: #333;
+  padding: 3rem 4rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 400px;
+}
+
+.login-container h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.login-description {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.oauth-button {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.oauth-button:hover {
+  background-color: #357ae8;
+}

@@ -1,26 +1,30 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import MapView from './pages/MapView'
-import Header from './components/Header'
-import Credits from './pages/Credits'
-import Footer from './components/Footer'
+import { useState, useEffect } from 'react';
+import './styles/App.css';
+import AppRouter from './routes/AppRouter';
 
 // Router setup for the application
 function App() {
-  const user = true;
-  return (
-    <Router>
-      <div className="app-content">
-        <Header />
-        <Routes>
-          <Route path="/map" element={user ? <MapView /> : <h1>Please log in</h1>} />
-          {/* At root for now, will want landing screen later */}
-          <Route path="/credits" element={<Credits />} />
-          {/* Login, checkout, profile, etc. */}
-        </Routes>
-        <Footer />
-      </div>
-    </Router>
-  )
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/auth/me', {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const userData = await res.json();
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error('Not logged in');
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  return <AppRouter user={user} setUser={setUser} />;
 }
 
-export default App
+export default App;
