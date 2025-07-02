@@ -12,7 +12,7 @@ function App() {
       <div className="app-content">
         <Header />
         <Routes>
-          <Route path="/" element={user ? <MapView /> : <h1>Please log in</h1>} />
+          <Route path="/map" element={user ? <MapView /> : <h1>Please log in</h1>} />
           {/* At root for now, will want landing screen later */}
           <Route path="/credits" element={<Credits />} />
           {/* Login, checkout, profile, etc. */}
