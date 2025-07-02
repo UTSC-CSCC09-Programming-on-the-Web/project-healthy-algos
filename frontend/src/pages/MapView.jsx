@@ -40,7 +40,6 @@ export default function MapView() {
           k.pos(0, 0),
           k.scale(GAME_CONFIG.MAP_SCALE),
         ])
-
         const player = new Player(k)
         player.createSprites()
 
@@ -49,8 +48,17 @@ export default function MapView() {
 
         k.onUpdate(() => {
           const { moveX, moveY } = inputSystem.getMovementInput()
-          movementSystem.moveSprites(player.getAllSprites(), moveX, moveY)
-          collisionSystem.constrainToMapBounds(player.getAllSprites())
+
+          if (moveX !== 0 || moveY !== 0) {
+            player.switchToWalk()
+          } else {
+            player.switchToIdle()
+          }
+          
+          // Update camera target after animation switch
+          cameraSystem.setTarget(player.getMainSprite())
+          movementSystem.moveCharacter(player, moveX, moveY)
+          collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()
         })
       })

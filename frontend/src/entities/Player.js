@@ -1,4 +1,5 @@
 import { BaseCharacter } from './BaseCharacter';
+import { ANIMATIONS } from '../config/gameConfig';
 
 class Player extends BaseCharacter {
   constructor(kaplayContext, startX = null, startY = null) {
@@ -7,10 +8,23 @@ class Player extends BaseCharacter {
   }
 
   createSprites() {
-    return super.createSprites("player_idle_base", "player_idle_short_hair");
+    // Define sprite configuration for player
+    const spriteConfig = {
+      idle: {
+        base: "player_idle_base",
+        hair: "player_idle_short_hair"
+      },
+      walk: {
+        base: "player_walk_base", 
+        hair: "player_walk_short_hair"
+      }
+    };
+
+    return super.createSprites(spriteConfig);
   }
 
-  // Maybe player-specific logic in the future, but not sure
+  // Player-specific methods for future
+  // (input handling, player stats, etc.)
 }
 
 export { Player };

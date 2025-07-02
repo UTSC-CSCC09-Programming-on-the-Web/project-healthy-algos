@@ -33,6 +33,32 @@ class AssetLoader {
         }
       }
     });
+
+    this.k.loadSprite("player_walk_base", GAME_CONFIG.ASSETS.PLAYER_WALK_BASE, {
+      sliceX: 8, 
+      sliceY: 1, 
+      anims: {
+        walk: {
+          from: 0,
+          to: 7,
+          speed: 12,
+          loop: true
+        }
+      }
+    });
+
+    this.k.loadSprite("player_walk_short_hair", GAME_CONFIG.ASSETS.PLAYER_WALK_SHORT_HAIR, {
+      sliceX: 8, 
+      sliceY: 1, 
+      anims: {
+        walk: {
+          from: 0,
+          to: 7,
+          speed: 12,
+          loop: true
+        }
+      }
+    });
   }
 
   // Load characater sprites

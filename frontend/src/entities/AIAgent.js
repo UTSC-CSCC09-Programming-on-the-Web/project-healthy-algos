@@ -11,7 +11,18 @@ export class AIAgent extends BaseCharacter {
   }
 
   createSprites() {
-    return super.createSprites("player_idle_base", "player_idle_short_hair");
+    const spriteConfig = {
+      idle: {
+        base: "player_idle_base",
+        hair: "player_idle_short_hair"
+      },
+      walk: {
+        base: "player_walk_base", 
+        hair: "player_walk_short_hair"
+      }
+    };
+
+    return super.createSprites(spriteConfig);
   }
 
   // AI decision making

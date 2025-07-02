@@ -2,32 +2,31 @@ import { GAME_CONFIG, SCALED_MAP_WIDTH, SCALED_MAP_HEIGHT } from '../config/game
 
 class CollisionSystem {
   constructor() {
-    this.collisionWidth = GAME_CONFIG.COLLISION_WIDTH / 2;
-    this.collisionHeight = GAME_CONFIG.COLLISION_HEIGHT / 2;
+    this.collisionWidth = 10; 
+    this.collisionHeight = 10;
   }
 
-  constrainToMapBounds(sprites) {
-    sprites.forEach(sprite => {
-      let newX = sprite.pos.x;
-      let newY = sprite.pos.y;
+  constrainToMapBounds(character) {
+    const pos = character.getPosition();
+    let newX = pos.x;
+    let newY = pos.y;
 
-      // Apply rectangular map bounds
-      if (newX - this.collisionWidth < 0) {
-        newX = this.collisionWidth;
-      }
-      if (newX + this.collisionWidth > SCALED_MAP_WIDTH) {
-        newX = SCALED_MAP_WIDTH - this.collisionWidth;
-      }
-      if (newY - this.collisionHeight < 0) {
-        newY = this.collisionHeight;
-      }
-      if (newY + this.collisionHeight > SCALED_MAP_HEIGHT) {
-        newY = SCALED_MAP_HEIGHT - this.collisionHeight;
-      }
+    if (newX - this.collisionWidth < 0) {
+      newX = this.collisionWidth;
+    }
+    if (newX + this.collisionWidth > SCALED_MAP_WIDTH) {
+      newX = SCALED_MAP_WIDTH - this.collisionWidth;
+    }
+    if (newY - this.collisionHeight < 0) {
+      newY = this.collisionHeight;
+    }
+    if (newY + this.collisionHeight > SCALED_MAP_HEIGHT) {
+      newY = SCALED_MAP_HEIGHT - this.collisionHeight;
+    }
 
-      sprite.pos.x = newX;
-      sprite.pos.y = newY;
-    });
+    if (newX !== pos.x || newY !== pos.y) {
+      character.setPosition(newX, newY);
+    }
   }
 
   // Check if two sprites are colliding (for future use)
@@ -40,7 +39,7 @@ class CollisionSystem {
     return distance < minDistance;
   }
 
-  // Get all sprites within a certain radius
+  // Get all sprites within a certain radius (for future use)
   getSpritesInRadius(centerSprite, allSprites, radius) {
     return allSprites.filter(sprite => {
       if (sprite === centerSprite) return false;

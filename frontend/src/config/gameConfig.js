@@ -1,3 +1,9 @@
+export const ANIMATIONS = {
+  IDLE: "idle",
+  WALK: "walk",
+  // More to come
+}
+
 export const GAME_CONFIG = {
   // Canvas settings
   CANVAS_WIDTH: 800,
@@ -22,7 +28,9 @@ export const GAME_CONFIG = {
   ASSETS: {
     MAP_BACKGROUND: "/assets/Sunnyside/Maps/map.png",
     PLAYER_IDLE_BASE: "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png",
-    PLAYER_IDLE_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png"
+    PLAYER_IDLE_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png",
+    PLAYER_WALK_BASE: "/assets/Sunnyside/Characters/Human/WALKING/base_walk_strip8.png",
+    PLAYER_WALK_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/WALKING/shorthair_walk_strip8.png"
   }
 };
 

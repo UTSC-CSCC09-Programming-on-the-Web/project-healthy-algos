@@ -5,8 +5,12 @@ class MovementSystem {
     this.moveSpeed = GAME_CONFIG.MOVE_SPEED;
   }
 
-  // For all sprites movement
-  moveSprites(sprites, moveX, moveY) {
+  moveCharacter(character, moveX, moveY) {
+    // Update facing direction before movement
+    if (moveX !== 0) {
+      character.updateFacingDirection(moveX);
+    }
+
     // Normalize diagonal movement to maintain consistent speed
     if (moveX !== 0 && moveY !== 0) {
       moveX *= 0.707; // 1/√2 ≈ 0.707
@@ -14,18 +18,11 @@ class MovementSystem {
     }
 
     if (moveX !== 0 || moveY !== 0) {
-      sprites.forEach(sprite => {
-        sprite.move(
-          moveX * this.moveSpeed, 
-          moveY * this.moveSpeed
-        );
-      });
+      const deltaTime = character.k.dt();
+      const deltaX = moveX * this.moveSpeed * deltaTime;
+      const deltaY = moveY * this.moveSpeed * deltaTime;
+      character.updatePosition(deltaX, deltaY);
     }
-  }
-
-  // For single sprite movement
-  moveSprite(sprite, moveX, moveY) {
-    this.moveSprites([sprite], moveX, moveY);
   }
 }
 
