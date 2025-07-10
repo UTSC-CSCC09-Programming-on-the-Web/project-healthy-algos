@@ -10,6 +10,7 @@ import { CollisionSystem } from '../systems/CollisionSystem'
 import { CameraSystem } from '../systems/CameraSystem'
 
 import { Player } from '../entities/Player'
+import { AIAgent } from '../entities/AIAgent'
 
 export default function MapView() {
   const canvasRef = useRef(null)
@@ -43,6 +44,23 @@ export default function MapView() {
         const player = new Player(k)
         player.createSprites()
 
+        const aiAgents = [];
+        const agentNames = ['Agent_A', 'Agent_B', 'Agent_C', 'Agent_D'];
+        
+        const playerStartX = player.position.x;
+        const playerStartY = player.position.y;
+        
+        agentNames.forEach((name, index) => {
+          const angle = (index / agentNames.length) * 2 * Math.PI;
+          const distance = 100; 
+          const startX = playerStartX + Math.cos(angle) * distance;
+          const startY = playerStartY + Math.sin(angle) * distance;
+          
+          const agent = new AIAgent(k, name, startX, startY);
+          agent.createSprites();
+          aiAgents.push(agent);
+        });
+
         // Camera follows player
         cameraSystem.setTarget(player.getMainSprite())
 
@@ -60,6 +78,21 @@ export default function MapView() {
           movementSystem.moveCharacter(player, moveX, moveY)
           collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()
+
+          // Update AI agents
+          aiAgents.forEach(agent => {
+            const decision = agent.update();
+            if (decision) {
+              movementSystem.moveCharacter(agent, decision.moveX, decision.moveY);
+              collisionSystem.constrainToMapBounds(agent);
+              
+              if (decision.moveX !== 0 || decision.moveY !== 0) {
+                agent.switchToWalk();
+              } else {
+                agent.switchToIdle();
+              }
+            }
+          });
         })
       })
       k.go("main")

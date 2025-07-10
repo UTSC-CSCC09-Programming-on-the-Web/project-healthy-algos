@@ -1,4 +1,3 @@
-// WorldPage.jsx (Merged with MapView)
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import kaplay from 'kaplay';
@@ -11,6 +10,7 @@ import { InputSystem } from '../systems/InputSystem';
 import { CollisionSystem } from '../systems/CollisionSystem';
 import { CameraSystem } from '../systems/CameraSystem';
 import { Player } from '../entities/Player';
+import { AIAgent } from '../entities/AIAgent';
 
 export default function WorldPage() {
   const [loading, setLoading] = useState(true);
@@ -73,6 +73,23 @@ export default function WorldPage() {
 
         cameraSystem.setTarget(player.getMainSprite());
 
+        const aiAgents = [];
+        const agentNames = ['Agent_A', 'Agent_B', 'Agent_C', 'Agent_D'];
+        
+        const playerStartX = player.position.x;
+        const playerStartY = player.position.y;
+        
+        agentNames.forEach((name, index) => {
+          const angle = (index / agentNames.length) * 2 * Math.PI;
+          const distance = 120 + Math.random() * 100;
+          const startX = playerStartX + Math.cos(angle) * distance;
+          const startY = playerStartY + Math.sin(angle) * distance;
+          
+          const agent = new AIAgent(k, name, startX, startY);
+          agent.createSprites();
+          aiAgents.push(agent);
+        });
+
         k.onUpdate(() => {
           const { moveX, moveY } = inputSystem.getMovementInput();
 
@@ -86,6 +103,20 @@ export default function WorldPage() {
           movementSystem.moveCharacter(player, moveX, moveY);
           collisionSystem.constrainToMapBounds(player);
           cameraSystem.update();
+
+          aiAgents.forEach(agent => {
+            const decision = agent.update();
+            if (decision) {
+              movementSystem.moveCharacter(agent, decision.moveX, decision.moveY);
+              collisionSystem.constrainToMapBounds(agent);
+              
+              if (decision.moveX !== 0 || decision.moveY !== 0) {
+                agent.switchToWalk();
+              } else {
+                agent.switchToIdle();
+              }
+            }
+          });
         });
       });
 

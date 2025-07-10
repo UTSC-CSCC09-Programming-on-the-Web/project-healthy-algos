@@ -22,9 +22,6 @@ class Player extends BaseCharacter {
 
     return super.createSprites(spriteConfig);
   }
-
-  // Player-specific methods for future
-  // (input handling, player stats, etc.)
 }
 
 export { Player };
