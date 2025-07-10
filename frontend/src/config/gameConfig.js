@@ -27,10 +27,18 @@ export const GAME_CONFIG = {
   // Asset paths
   ASSETS: {
     MAP_BACKGROUND: "/assets/Sunnyside/Maps/map.png",
-    PLAYER_IDLE_BASE: "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png",
-    PLAYER_IDLE_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png",
-    PLAYER_WALK_BASE: "/assets/Sunnyside/Characters/Human/WALKING/base_walk_strip8.png",
-    PLAYER_WALK_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/WALKING/shorthair_walk_strip8.png"
+    WALK_BASE: "/assets/Sunnyside/Characters/Human/WALKING/base_walk_strip8.png",
+    IDLE_BASE: "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png",
+    IDLE_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png",
+    WALK_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/WALKING/shorthair_walk_strip8.png",
+    WALK_SPIKY_HAIR: "/assets/Sunnyside/Characters/Human/WALKING/spikyhair_walk_strip8.png",
+    IDLE_SPIKY_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/spikyhair_idle_strip9.png",
+    WALK_LONG_HAIR: "/assets/Sunnyside/Characters/Human/WALKING/longhair_walk_strip8.png",
+    IDLE_LONG_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/longhair_idle_strip9.png",
+    WALK_CURLY_HAIR: "/assets/Sunnyside/Characters/Human/WALKING/curlyhair_walk_strip8.png",
+    IDLE_CURLY_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/curlyhair_idle_strip9.png",
+    WALK_MOP_HAIR: "/assets/Sunnyside/Characters/Human/WALKING/mophair_walk_strip8.png",
+    IDLE_MOP_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/mophair_idle_strip9.png",
   }
 };
 
