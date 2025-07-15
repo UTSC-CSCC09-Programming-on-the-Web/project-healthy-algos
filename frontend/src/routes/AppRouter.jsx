@@ -8,7 +8,6 @@ import SubscriptionPage from '../pages/SubscriptionPage';
 import SuccessPage from '../pages/SuccessPage';
 import MapView from '../pages/MapView'
 import Credits from '../pages/Credits'
-import Footer from '../components/Footer'
 
 export default function AppRouter({ user, setUser }) {
   return (
@@ -17,7 +16,7 @@ export default function AppRouter({ user, setUser }) {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/world" element={<WorldPage />} />
+        <Route path="/world" element={<MapView />} />
         <Route path="/subscribe" element={<SubscriptionPage />} />
         <Route path="/success" element={<SuccessPage />} />
         {/* <Route path="/world" element={<MapView />} />  */}
