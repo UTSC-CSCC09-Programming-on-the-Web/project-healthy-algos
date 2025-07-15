@@ -1,0 +1,54 @@
+.subscription-page {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+  background-color: #1a1a1a; /* Optional: solid dark background */
+  color: white;
+}
+
+.subscription-page h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.subscription-page p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.subscription-button {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background-color: #ffcc00;
+  color: #333;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease;
+}
+
+.subscription-button:hover {
+  background-color: #f5c400;
+}
+
+.stripe-logo {
+  height: 24px;
+  width: 24px;
+}
+
+.subscription-logo {
+  width: 60%;
+  max-width: 400px;
+  margin-bottom: 2rem;
+}

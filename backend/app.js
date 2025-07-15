@@ -8,6 +8,7 @@ import protectedRoutes from './routes/protectedRoutes.js';
 import stripeRoutes from './routes/stripeRoutes.js';
 import { initializeDatabase } from './initDb.js';
 import { createDatabaseIfNotExists } from './createDatabase.js';
+import { ensureAuthenticated } from './middleware/authMiddleware.js';
 
 (async () => {
   await createDatabaseIfNotExists();
@@ -34,7 +35,7 @@ import { createDatabaseIfNotExists } from './createDatabase.js';
 
   app.use('/api', protectedRoutes);
 
-  app.use('/api/stripe', stripeRoutes);
+  app.use('/api/stripe', ensureAuthenticated, stripeRoutes);
 
   const PORT = process.env.PORT || 3000;
 
