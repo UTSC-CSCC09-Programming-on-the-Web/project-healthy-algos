@@ -7,6 +7,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
 });
 
 // Redis setup for WebSocket
@@ -58,7 +59,7 @@ async function makeAIDecision(gameContext) {
           - Time: ${gameContext.timestamp}` 
         },
       ],
-      model: "gpt-4o-mini",
+      model: "deepseek/deepseek-r1-distill-llama-70b",
       temperature: 0.7,
       max_tokens: 200,
     });
@@ -164,6 +165,6 @@ gameAIWorker.on('error', (err) => {
   console.error('Worker error:', err);
 });
 
-console.log("🤖 Game AI Worker started successfully!");
-console.log("🔌 Listening for jobs on 'GameAI' queue");
-console.log("📡 WebSocket server running on port 3001");
+console.log("Game AI Worker started successfully!");
+console.log("Listening for jobs on 'GameAI' queue");
+console.log("WebSocket server running on port 3001");
