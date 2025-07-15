@@ -1,5 +1,5 @@
-// src/components/Header.jsx
 import { useNavigate } from 'react-router-dom';
+import '../styles/Header.css';
 
 export default function Header({ user, setUser }) {
   const navigate = useNavigate();
@@ -17,29 +17,34 @@ export default function Header({ user, setUser }) {
   };
 
   return (
-    <header
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        padding: '1rem',
-        borderBottom: '1px solid #ccc',
-        alignItems: 'center'
-      }}
-    >
-
-      <div>
-        <button onClick={() => navigate('/')} style={{ marginRight: '1rem' }}>Home</button>
-        <button onClick={() => navigate('/world')}>World</button>
+    <header className="header">
+      <div className="header-left">
+        <img
+          src="/media/iSim.png"
+          alt="Logo"
+          className="header-logo"
+          onClick={() => navigate('/')}
+        />
+        <button onClick={() => navigate('/')} className="header-button">
+          Home
+        </button>
+        <button onClick={() => navigate('/world')} className="header-button">
+          World
+        </button>
       </div>
 
-      <div>
+      <div className="header-right">
         {user ? (
           <>
-            <span style={{ marginRight: '1rem' }}>{user.name}</span>
-            <button onClick={handleLogout}>Logout</button>
+            <span className="header-username">{user.name}</span>
+            <button onClick={handleLogout} className="header-button">
+              Logout
+            </button>
           </>
         ) : (
-          <button onClick={() => navigate('/login')}>Login</button>
+          <button onClick={() => navigate('/login')} className="header-button">
+            Login
+          </button>
         )}
       </div>
     </header>

@@ -6,7 +6,7 @@ export const ANIMATIONS = {
 
 export const GAME_CONFIG = {
   // Canvas settings
-  CANVAS_WIDTH: 800,
+  CANVAS_WIDTH: 1080,
   CANVAS_HEIGHT: 600,
   BACKGROUND_COLOR: [135, 206, 235],
 
