@@ -17,6 +17,12 @@ export class AIAgent extends BaseCharacter {
     this.currentActionStartTime = 0;
     this.isWaitingForAIDecision = false;
     
+    // Chat properties
+    this.isInChat = false;
+    this.chatHoverDistance = 60;
+    this.clickableDistance = 200;
+    this.showChatIndicator = false;
+    
     // Subscribe to AI decisions
     aiService.subscribeToAIDecisions(agentName, (decision, error) => {
       this.handleAIDecision(decision, error);
@@ -64,6 +70,17 @@ export class AIAgent extends BaseCharacter {
   }
 
   update(playerPosition = null, mapBounds = null) {
+    // If in chat, stay idle and don't move
+    if (this.isInChat) {
+      return { moveX: 0, moveY: 0 };
+    }
+
+    // Check if player is nearby for chat indicator
+    if (playerPosition) {
+      const distance = this.getDistanceToPlayer(playerPosition);
+      this.showChatIndicator = distance <= this.chatHoverDistance;
+    }
+
     if (aiService.isReady() && !this.isWaitingForAIDecision && playerPosition && mapBounds) {
       const currentTime = Date.now();
       
@@ -168,5 +185,39 @@ export class AIAgent extends BaseCharacter {
 
   getAgentType() {
     return this.agentType.name;
+  }
+
+  // Chat-related methods
+  getDistanceToPlayer(playerPosition) {
+    const myPos = this.getPosition();
+    const dx = playerPosition.x - myPos.x;
+    const dy = playerPosition.y - myPos.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  isClickableForChat(playerPosition) {
+    return this.getDistanceToPlayer(playerPosition) <= this.clickableDistance;
+  }
+
+  startChat() {
+    console.log(`${this.name} entering chat mode`);
+    this.isInChat = true;
+    this.aiState = "chatting";
+    // Stop any current movement
+    this.currentSequence = null;
+    this.currentActionIndex = 0;
+    this.isWaitingForAIDecision = false;
+  }
+
+  endChat() {
+    console.log(`${this.name} leaving chat mode`);
+    this.isInChat = false;
+    this.aiState = "idle";
+    this.lastDecisionTime = 0;
+    this.showChatIndicator = false;
+  }
+
+  canInteractWith(player) {
+    return this.getDistanceToPlayer(player.getPosition()) <= this.chatHoverDistance;
   }
 }

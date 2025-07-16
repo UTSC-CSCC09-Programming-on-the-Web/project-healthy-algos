@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import kaplay from 'kaplay'
 import '../styles/Map.css'
 
@@ -12,13 +12,31 @@ import { CameraSystem } from '../systems/CameraSystem'
 import { Player } from '../entities/Player'
 import { AIAgent } from '../entities/AIAgent'
 import { aiService } from '../services/aiService'
+import { chatService } from '../services/chatService'
+import ChatWindow from '../components/ChatWindow'
 
 export default function MapView() {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
   const aiAgentsRef = useRef([])
+  
+  // Chat state
+  const [chatOpen, setChatOpen] = useState(false)
+  const [currentChatAgent, setCurrentChatAgent] = useState(null)
+  const [chatMessages, setChatMessages] = useState([])
+  const [isTyping, setIsTyping] = useState(false)
 
   useEffect(() => {
+    // Initialize both AI and chat services
+    Promise.all([
+      aiService.initialize(),
+      chatService.initialize()
+    ]).then(() => {
+      console.log('🎮 Both AI and Chat services initialized');
+    }).catch(error => {
+      console.error('❌ Failed to initialize services:', error);
+    });
+
     const k = kaplay({
       canvas: canvasRef.current,
       width: GAME_CONFIG.CANVAS_WIDTH,
@@ -81,8 +99,45 @@ export default function MapView() {
         // Camera follows player
         cameraSystem.setTarget(player.getMainSprite())
 
+        // Handle clicks on AI agents for chat
+        k.onClick(() => {
+          const screenMousePos = k.mousePos();
+          const worldMousePos = k.toWorld(screenMousePos);
+          const playerPos = player.getPosition();
+          console.log('=== CLICK DEBUG ===');
+          console.log('Screen mouse position:', screenMousePos);
+          console.log('World mouse position:', worldMousePos);
+          console.log('Player position:', playerPos);
+          console.log('Number of agents:', aiAgents.length);
+          
+          // Check if clicked on any AI agent
+          aiAgents.forEach((agent, index) => {
+            const agentPos = agent.getPosition();
+            const clickDistance = Math.sqrt(
+              Math.pow(worldMousePos.x - agentPos.x, 2) + 
+              Math.pow(worldMousePos.y - agentPos.y, 2)
+            );
+            
+            console.log(`Agent ${index} (${agent.name}):`);
+            console.log('  Position:', agentPos);
+            console.log('  Click distance:', clickDistance);
+            console.log('  Is clickable for chat:', agent.isClickableForChat(playerPos));
+            console.log('  Distance threshold: 120');
+            
+            // If clicked close to agent and player is nearby
+            if (clickDistance <= 200 && agent.isClickableForChat(playerPos)) {
+              console.log('*** STARTING CHAT WITH AGENT ***', agent.name);
+              startChatWithAgent(agent);
+            } else {
+              console.log('  -> Not clickable (distance too far or agent not available)');
+            }
+          });
+          console.log('=== END CLICK DEBUG ===');
+        });
+
         k.onUpdate(() => {
-          const { moveX, moveY } = inputSystem.getMovementInput()
+          // Don't process movement input if chat is open
+          const { moveX, moveY } = chatOpen ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput()
           cameraSystem.setTarget(player.getMainSprite())
           // MovementSystem handles both movement and animations
           movementSystem.moveCharacter(player, moveX, moveY)
@@ -116,8 +171,9 @@ export default function MapView() {
         }
       });
       
-      // Cleanup AI service
+      // Cleanup services
       aiService.disconnect();
+      chatService.disconnect();
       
       if (gameRef.current) {
         gameRef.current.quit()
@@ -126,9 +182,71 @@ export default function MapView() {
     }
   }, [])
 
+  const startChatWithAgent = (agent) => {
+    setCurrentChatAgent(agent);
+    setChatMessages([]);
+    setChatOpen(true);
+    
+    // Tell the agent it's in chat mode
+    agent.startChat();
+    
+    // Start chat session with backend
+    const success = chatService.startChatSession(
+      agent.name, 
+      agent.name, 
+      (message) => {
+        setChatMessages(prev => [...prev, message]);
+        setIsTyping(false);
+      }
+    );
+    
+    if (!success) {
+      console.error('Failed to start chat session');
+      endChat();
+    }
+  };
+
+  const handleSendMessage = (message) => {
+    if (!currentChatAgent) return;
+    
+    // Add user message immediately
+    const userMessage = {
+      sender: 'player',
+      content: message,
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setIsTyping(true);
+    
+    // Send to backend
+    chatService.sendMessage(currentChatAgent.name, message);
+  };
+
+  const endChat = () => {
+    if (currentChatAgent) {
+      currentChatAgent.endChat();
+      chatService.endChatSession(currentChatAgent.name);
+    }
+    
+    setChatOpen(false);
+    setCurrentChatAgent(null);
+    setChatMessages([]);
+    setIsTyping(false);
+  };
+
   return (
     <div className="map">
       <canvas ref={canvasRef}></canvas>
+      
+      <ChatWindow
+        isOpen={chatOpen}
+        agentName={currentChatAgent?.name || ''}
+        onClose={endChat}
+        onSendMessage={handleSendMessage}
+        messages={chatMessages}
+        isTyping={isTyping}
+      />
     </div>
   )
 }
