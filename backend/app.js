@@ -3,20 +3,20 @@ import cors from "cors";
 import session from "express-session";
 import passport from "passport";
 import "dotenv/config";
-// import "./services/oauthService.js";  // ❌ Temporarily disabled - requires OAuth credentials
-// import authRoutes from "./routes/authRoutes.js";  // ❌ Temporarily disabled
-// import protectedRoutes from './routes/protectedRoutes.js';  // ❌ Temporarily disabled
-// import stripeRoutes from './routes/stripeRoutes.js';  // ❌ Temporarily disabled
-import gameAIRoutes from './routes/gameAIRoutes.js';  // ✅ Keep AI routes
-// import { initializeDatabase } from './initDb.js';  // ❌ Temporarily disabled
-// import { createDatabaseIfNotExists } from './createDatabase.js';  // ❌ Temporarily disabled
+import "./services/oauthService.js";
+import authRoutes from "./routes/authRoutes.js";
+import protectedRoutes from './routes/protectedRoutes.js';
+import stripeRoutes from './routes/stripeRoutes.js';
+import gameAIRoutes from './routes/gameAIRoutes.js';
+import { initializeDatabase } from './initDb.js';
+import { createDatabaseIfNotExists } from './createDatabase.js';
 
 (async () => {
-  // await createDatabaseIfNotExists();  // ❌ Temporarily disabled
+  await createDatabaseIfNotExists();
   const app = express();
-  // await initializeDatabase();  // ❌ Temporarily disabled
+  await initializeDatabase();
 
-  // app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));  // ❌ Temporarily disabled
+  app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 
   app.use(cors({
     origin: 'http://localhost:5173',
@@ -38,28 +38,37 @@ import gameAIRoutes from './routes/gameAIRoutes.js';  // ✅ Keep AI routes
 
   app.use(passport.initialize());
   app.use(passport.session());
-  // app.use('/api/auth', authRoutes);  // ❌ Temporarily disabled
-  // app.use('/api', protectedRoutes);  // ❌ Temporarily disabled
-  // app.use('/api/stripe', stripeRoutes);  // ❌ Temporarily disabled
+  app.use('/api/auth', authRoutes);
+  app.use('/api', protectedRoutes);
+  app.use('/api/stripe', stripeRoutes);
   app.use('/api/game', gameAIRoutes); 
 
-  // Check if AI worker is running
+  // Check if server is running
   app.get('/', (req, res) => {
     res.json({ 
       status: 'healthy', 
-      message: 'AI-only backend running',
-      endpoints: ['/api/game/ai-decision', '/api/game/health']
+      message: 'Backend running with full features',
+      endpoints: [
+        '/api/auth/google',
+        '/api/auth/logout', 
+        '/api/stripe/create-payment-intent',
+        '/api/game/ai-decision',
+        '/api/game/health'
+      ]
     });
   });
 
   const PORT = process.env.PORT || 3000;
 
   app.listen(PORT, () => {
-    console.log(`AI-focused backend running on http://localhost:${PORT}`);
+    console.log(`Full-featured backend running on http://localhost:${PORT}`);
     console.log(`Available endpoints:`);
-    console.log(`GET  /                     - Health check`);
-    console.log(`POST /api/game/ai-decision - Request AI decision`);
-    console.log(`GET  /api/game/health      - AI system health`);
+    console.log(`GET  /                               - Health check`);
+    console.log(`GET  /api/auth/google                - OAuth login`);
+    console.log(`GET  /api/auth/logout               - Logout`);
+    console.log(`POST /api/stripe/create-payment-intent - Stripe payment`);
+    console.log(`POST /api/game/ai-decision          - Request AI decision`);
+    console.log(`GET  /api/game/health               - AI system health`);
   });
 
 })();

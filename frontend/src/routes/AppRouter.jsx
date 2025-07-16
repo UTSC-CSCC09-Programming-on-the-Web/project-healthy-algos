@@ -16,7 +16,7 @@ export default function AppRouter({ user, setUser }) {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/world" element={<MapView />} />
+        <Route path="/world" element={<WorldPage />} />
         <Route path="/subscribe" element={<SubscriptionPage />} />
         <Route path="/success" element={<SuccessPage />} />
         {/* <Route path="/world" element={<MapView />} />  */}
