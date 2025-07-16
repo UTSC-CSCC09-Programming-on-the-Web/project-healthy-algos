@@ -25,8 +25,6 @@ export const io = new Server(3001, {
 console.log("Socket.IO server running on port 3001");
 
 async function makeAIDecision(gameContext) {
-  console.log("Making AI decision for agent at:", gameContext.aiPosition);
-  
   const centerX = gameContext.mapBounds.width / 2;
   const centerY = gameContext.mapBounds.height / 2;
   const distanceFromCenter = Math.sqrt(
@@ -187,9 +185,7 @@ Respond with JSON only, no other text.`
 }
 
 async function onAIDecisionRequested(jobData) {
-  console.log(`Processing AI decision for agent ${jobData.aiAgentId}`);
-  
-  try {
+try {
     await new Promise(resolve => setTimeout(resolve, 1000));
     const decision = await makeAIDecision(jobData.gameState);
     io.emit("ai.decision", {
@@ -215,8 +211,6 @@ async function onAIDecisionRequested(jobData) {
 const gameAIWorker = new Worker(
   "GameAI",
   async (job) => {
-    console.log(`Processing job: ${job.name} with ID: ${job.id}`);
-    
     if (job.name === "AIDecision") {
       return await onAIDecisionRequested(job.data);
     } else {
