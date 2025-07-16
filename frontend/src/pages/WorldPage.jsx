@@ -93,12 +93,6 @@ export default function WorldPage() {
         k.onUpdate(() => {
           const { moveX, moveY } = inputSystem.getMovementInput();
 
-          if (moveX !== 0 || moveY !== 0) {
-            player.switchToWalk();
-          } else {
-            player.switchToIdle();
-          }
-
           cameraSystem.setTarget(player.getMainSprite());
           movementSystem.moveCharacter(player, moveX, moveY);
           collisionSystem.constrainToMapBounds(player);
@@ -109,12 +103,6 @@ export default function WorldPage() {
             if (decision) {
               movementSystem.moveCharacter(agent, decision.moveX, decision.moveY);
               collisionSystem.constrainToMapBounds(agent);
-              
-              if (decision.moveX !== 0 || decision.moveY !== 0) {
-                agent.switchToWalk();
-              } else {
-                agent.switchToIdle();
-              }
             }
           });
         });

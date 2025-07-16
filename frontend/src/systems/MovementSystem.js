@@ -11,6 +11,13 @@ class MovementSystem {
       character.updateFacingDirection(moveX);
     }
 
+    // Handle animation state based on movement
+    if (moveX !== 0 || moveY !== 0) {
+      character.switchToWalk();
+    } else {
+      character.switchToIdle();
+    }
+
     // Normalize diagonal movement to maintain consistent speed
     if (moveX !== 0 && moveY !== 0) {
       moveX *= 0.707; // 1/√2 ≈ 0.707

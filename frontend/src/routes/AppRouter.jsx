@@ -8,7 +8,6 @@ import SubscriptionPage from '../pages/SubscriptionPage';
 import SuccessPage from '../pages/SuccessPage';
 import MapView from '../pages/MapView'
 import Credits from '../pages/Credits'
-import Footer from '../components/Footer'
 
 function RequireAuth({ user, children }) {
   if (!user) {

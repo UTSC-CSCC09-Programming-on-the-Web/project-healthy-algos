@@ -11,10 +11,12 @@ import { CameraSystem } from '../systems/CameraSystem'
 
 import { Player } from '../entities/Player'
 import { AIAgent } from '../entities/AIAgent'
+import { aiService } from '../services/aiService'
 
 export default function MapView() {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
+  const aiAgentsRef = useRef([])
 
   useEffect(() => {
     const k = kaplay({
@@ -33,6 +35,18 @@ export default function MapView() {
     const cameraSystem = new CameraSystem(k)
 
     assetLoader.loadAllAssets()
+
+    // Initialize AI Service
+    const initializeAI = async () => {
+      try {
+        await aiService.initialize();
+        console.log('✅ AI Service initialized successfully');
+      } catch (error) {
+        console.warn('⚠️ AI Service initialization failed, using fallback behavior:', error);
+      }
+    };
+
+    initializeAI();
 
     k.onLoad(() => {
       k.scene("main", () => {
@@ -61,36 +75,32 @@ export default function MapView() {
           aiAgents.push(agent);
         });
 
+        // Store reference for cleanup
+        aiAgentsRef.current = aiAgents;
+
         // Camera follows player
         cameraSystem.setTarget(player.getMainSprite())
 
         k.onUpdate(() => {
           const { moveX, moveY } = inputSystem.getMovementInput()
-
-          if (moveX !== 0 || moveY !== 0) {
-            player.switchToWalk()
-          } else {
-            player.switchToIdle()
-          }
-          
-          // Update camera target after animation switch
           cameraSystem.setTarget(player.getMainSprite())
+          // MovementSystem handles both movement and animations
           movementSystem.moveCharacter(player, moveX, moveY)
           collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()
 
-          // Update AI agents
+          // Get current game state for AI
+          const playerPosition = player.getPosition();
+          const mapBounds = {
+            width: GAME_CONFIG.MAP_WIDTH * GAME_CONFIG.MAP_SCALE,
+            height: GAME_CONFIG.MAP_HEIGHT * GAME_CONFIG.MAP_SCALE
+          };
+
           aiAgents.forEach(agent => {
-            const decision = agent.update();
+            const decision = agent.update(playerPosition, mapBounds);
             if (decision) {
               movementSystem.moveCharacter(agent, decision.moveX, decision.moveY);
               collisionSystem.constrainToMapBounds(agent);
-              
-              if (decision.moveX !== 0 || decision.moveY !== 0) {
-                agent.switchToWalk();
-              } else {
-                agent.switchToIdle();
-              }
             }
           });
         })
@@ -99,6 +109,16 @@ export default function MapView() {
     })
 
     return () => {
+      // Cleanup AI agents
+      aiAgentsRef.current.forEach(agent => {
+        if (agent.destroy) {
+          agent.destroy();
+        }
+      });
+      
+      // Cleanup AI service
+      aiService.disconnect();
+      
       if (gameRef.current) {
         gameRef.current.quit()
         gameRef.current = null
