@@ -56,9 +56,9 @@ export default function MapView() {
     const initializeAI = async () => {
       try {
         await aiService.initialize();
-        console.log('✅ AI Service initialized successfully');
+        console.log('AI Service initialized successfully');
       } catch (error) {
-        console.warn('⚠️ AI Service initialization failed, using fallback behavior:', error);
+        console.warn('AI Service initialization failed, using fallback behavior:', error);
       }
     };
 
