@@ -19,8 +19,6 @@ export default function MapView() {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
   const aiAgentsRef = useRef([])
-  
-  // Chat state
   const [chatOpen, setChatOpen] = useState(false)
   const [currentChatAgent, setCurrentChatAgent] = useState(null)
   const [chatMessages, setChatMessages] = useState([])
@@ -104,11 +102,6 @@ export default function MapView() {
           const screenMousePos = k.mousePos();
           const worldMousePos = k.toWorld(screenMousePos);
           const playerPos = player.getPosition();
-          console.log('=== CLICK DEBUG ===');
-          console.log('Screen mouse position:', screenMousePos);
-          console.log('World mouse position:', worldMousePos);
-          console.log('Player position:', playerPos);
-          console.log('Number of agents:', aiAgents.length);
           
           // Check if clicked on any AI agent
           aiAgents.forEach((agent, index) => {
@@ -118,25 +111,15 @@ export default function MapView() {
               Math.pow(worldMousePos.y - agentPos.y, 2)
             );
             
-            console.log(`Agent ${index} (${agent.name}):`);
-            console.log('  Position:', agentPos);
-            console.log('  Click distance:', clickDistance);
-            console.log('  Is clickable for chat:', agent.isClickableForChat(playerPos));
-            console.log('  Distance threshold: 120');
-            
             // If clicked close to agent and player is nearby
             if (clickDistance <= 200 && agent.isClickableForChat(playerPos)) {
-              console.log('*** STARTING CHAT WITH AGENT ***', agent.name);
               startChatWithAgent(agent);
-            } else {
-              console.log('  -> Not clickable (distance too far or agent not available)');
             }
           });
-          console.log('=== END CLICK DEBUG ===');
         });
 
         k.onUpdate(() => {
-          // Don't process movement input if chat is open
+          // Don't move if chat is open
           const { moveX, moveY } = chatOpen ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput()
           cameraSystem.setTarget(player.getMainSprite())
           // MovementSystem handles both movement and animations
@@ -144,7 +127,7 @@ export default function MapView() {
           collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()
 
-          // Get current game state for AI
+          // Current state for AI
           const playerPosition = player.getPosition();
           const mapBounds = {
             width: GAME_CONFIG.MAP_WIDTH * GAME_CONFIG.MAP_SCALE,
@@ -186,8 +169,6 @@ export default function MapView() {
     setCurrentChatAgent(agent);
     setChatMessages([]);
     setChatOpen(true);
-    
-    // Tell the agent it's in chat mode
     agent.startChat();
     
     // Start chat session with backend
@@ -208,8 +189,6 @@ export default function MapView() {
 
   const handleSendMessage = (message) => {
     if (!currentChatAgent) return;
-    
-    // Add user message immediately
     const userMessage = {
       sender: 'player',
       content: message,
@@ -219,7 +198,6 @@ export default function MapView() {
     setChatMessages(prev => [...prev, userMessage]);
     setIsTyping(true);
     
-    // Send to backend
     chatService.sendMessage(currentChatAgent.name, message);
   };
 
