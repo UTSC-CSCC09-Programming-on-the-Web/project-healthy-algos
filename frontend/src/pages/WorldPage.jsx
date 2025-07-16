@@ -11,6 +11,9 @@ import { CollisionSystem } from '../systems/CollisionSystem';
 import { CameraSystem } from '../systems/CameraSystem';
 import { Player } from '../entities/Player';
 import { AIAgent } from '../entities/AIAgent';
+import { aiService } from '../services/aiService';
+import { chatService } from '../services/chatService';
+import ChatWindow from '../components/ChatWindow';
 
 export default function WorldPage() {
   const [loading, setLoading] = useState(true);
@@ -19,19 +22,27 @@ export default function WorldPage() {
 
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
+  
+  // Chat state
+  const [chatOpen, setChatOpen] = useState(false);
+  const [currentChatAgent, setCurrentChatAgent] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:3000/api/world', {
       credentials: 'include',
     })
       .then((res) => {
+        /*
         if (res.status === 402) {
           navigate('/subscribe');
         } else if (res.status === 401) {
           navigate('/login');
         } else {
           return res.json();
-        }
+        }*/
+       return res.json();
       })
       .then((data) => {
         if (data) {
@@ -43,6 +54,16 @@ export default function WorldPage() {
 
   useEffect(() => {
     if (loading) return;
+
+    // Initialize both AI and chat services
+    Promise.all([
+      aiService.initialize(),
+      chatService.initialize()
+    ]).then(() => {
+      console.log('🎮 Both AI and Chat services initialized');
+    }).catch(error => {
+      console.error('❌ Failed to initialize services:', error);
+    });
 
     const k = kaplay({
       canvas: canvasRef.current,
@@ -90,31 +111,47 @@ export default function WorldPage() {
           aiAgents.push(agent);
         });
 
+        // Handle clicks on AI agents for chat
+        k.onClick(() => {
+          const screenMousePos = k.mousePos();
+          const worldMousePos = k.toWorld(screenMousePos);
+          const playerPos = player.getPosition();
+          
+          // Check if clicked on any AI agent
+          aiAgents.forEach((agent, index) => {
+            const agentPos = agent.getPosition();
+            const clickDistance = Math.sqrt(
+              Math.pow(worldMousePos.x - agentPos.x, 2) + 
+              Math.pow(worldMousePos.y - agentPos.y, 2)
+            );
+            
+            // If clicked close to agent and player is nearby
+            if (clickDistance <= 200 && agent.isClickableForChat(playerPos)) {
+              startChatWithAgent(agent);
+            }
+          });
+        });
+
         k.onUpdate(() => {
           const { moveX, moveY } = inputSystem.getMovementInput();
-
-          if (moveX !== 0 || moveY !== 0) {
-            player.switchToWalk();
-          } else {
-            player.switchToIdle();
-          }
 
           cameraSystem.setTarget(player.getMainSprite());
           movementSystem.moveCharacter(player, moveX, moveY);
           collisionSystem.constrainToMapBounds(player);
           cameraSystem.update();
 
+          // Get current game state for AI
+          const playerPosition = player.getPosition();
+          const mapBounds = {
+            width: GAME_CONFIG.MAP_WIDTH * GAME_CONFIG.MAP_SCALE,
+            height: GAME_CONFIG.MAP_HEIGHT * GAME_CONFIG.MAP_SCALE
+          };
+
           aiAgents.forEach(agent => {
-            const decision = agent.update();
+            const decision = agent.update(playerPosition, mapBounds);
             if (decision) {
               movementSystem.moveCharacter(agent, decision.moveX, decision.moveY);
               collisionSystem.constrainToMapBounds(agent);
-              
-              if (decision.moveX !== 0 || decision.moveY !== 0) {
-                agent.switchToWalk();
-              } else {
-                agent.switchToIdle();
-              }
             }
           });
         });
@@ -124,6 +161,10 @@ export default function WorldPage() {
     });
 
     return () => {
+      // Cleanup services
+      aiService.disconnect();
+      chatService.disconnect();
+      
       if (gameRef.current) {
         gameRef.current.quit();
         gameRef.current = null;
@@ -131,5 +172,71 @@ export default function WorldPage() {
     };
   }, [loading]);
 
-  return loading ? <p>Loading...</p> : <div className="map"><canvas ref={canvasRef}></canvas></div>;
+  const startChatWithAgent = (agent) => {
+    setCurrentChatAgent(agent);
+    setChatMessages([]);
+    setChatOpen(true);
+    
+    // Tell the agent it's in chat mode
+    agent.startChat();
+    
+    // Start chat session with backend
+    const success = chatService.startChatSession(
+      agent.name, 
+      agent.name, 
+      (message) => {
+        setChatMessages(prev => [...prev, message]);
+        setIsTyping(false);
+      }
+    );
+    
+    if (!success) {
+      console.error('Failed to start chat session');
+      endChat();
+    }
+  };
+
+  const handleSendMessage = (message) => {
+    if (!currentChatAgent) return;
+    
+    // Add user message immediately
+    const userMessage = {
+      sender: 'player',
+      content: message,
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setIsTyping(true);
+    
+    // Send to backend
+    chatService.sendMessage(currentChatAgent.name, message);
+  };
+
+  const endChat = () => {
+    if (currentChatAgent) {
+      currentChatAgent.endChat();
+      chatService.endChatSession(currentChatAgent.name);
+    }
+    
+    setChatOpen(false);
+    setCurrentChatAgent(null);
+    setChatMessages([]);
+    setIsTyping(false);
+  };
+
+  return loading ? <p>Loading...</p> : (
+    <div className="map">
+      <canvas ref={canvasRef}></canvas>
+      
+      <ChatWindow
+        isOpen={chatOpen}
+        agentName={currentChatAgent?.name || ''}
+        onClose={endChat}
+        onSendMessage={handleSendMessage}
+        messages={chatMessages}
+        isTyping={isTyping}
+      />
+    </div>
+  );
 }

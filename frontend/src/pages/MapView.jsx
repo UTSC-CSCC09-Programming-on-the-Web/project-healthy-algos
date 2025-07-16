@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import kaplay from 'kaplay'
 import '../styles/Map.css'
 
@@ -11,12 +11,30 @@ import { CameraSystem } from '../systems/CameraSystem'
 
 import { Player } from '../entities/Player'
 import { AIAgent } from '../entities/AIAgent'
+import { aiService } from '../services/aiService'
+import { chatService } from '../services/chatService'
+import ChatWindow from '../components/ChatWindow'
 
 export default function MapView() {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
+  const aiAgentsRef = useRef([])
+  const [chatOpen, setChatOpen] = useState(false)
+  const [currentChatAgent, setCurrentChatAgent] = useState(null)
+  const [chatMessages, setChatMessages] = useState([])
+  const [isTyping, setIsTyping] = useState(false)
 
   useEffect(() => {
+    // Initialize both AI and chat services
+    Promise.all([
+      aiService.initialize(),
+      chatService.initialize()
+    ]).then(() => {
+      console.log('🎮 Both AI and Chat services initialized');
+    }).catch(error => {
+      console.error('❌ Failed to initialize services:', error);
+    });
+
     const k = kaplay({
       canvas: canvasRef.current,
       width: GAME_CONFIG.CANVAS_WIDTH,
@@ -33,6 +51,18 @@ export default function MapView() {
     const cameraSystem = new CameraSystem(k)
 
     assetLoader.loadAllAssets()
+
+    // Initialize AI Service
+    const initializeAI = async () => {
+      try {
+        await aiService.initialize();
+        console.log('AI Service initialized successfully');
+      } catch (error) {
+        console.warn('AI Service initialization failed, using fallback behavior:', error);
+      }
+    };
+
+    initializeAI();
 
     k.onLoad(() => {
       k.scene("main", () => {
@@ -61,36 +91,54 @@ export default function MapView() {
           aiAgents.push(agent);
         });
 
+        // Store reference for cleanup
+        aiAgentsRef.current = aiAgents;
+
         // Camera follows player
         cameraSystem.setTarget(player.getMainSprite())
 
-        k.onUpdate(() => {
-          const { moveX, moveY } = inputSystem.getMovementInput()
-
-          if (moveX !== 0 || moveY !== 0) {
-            player.switchToWalk()
-          } else {
-            player.switchToIdle()
-          }
+        // Handle clicks on AI agents for chat
+        k.onClick(() => {
+          const screenMousePos = k.mousePos();
+          const worldMousePos = k.toWorld(screenMousePos);
+          const playerPos = player.getPosition();
           
-          // Update camera target after animation switch
+          // Check if clicked on any AI agent
+          aiAgents.forEach((agent, index) => {
+            const agentPos = agent.getPosition();
+            const clickDistance = Math.sqrt(
+              Math.pow(worldMousePos.x - agentPos.x, 2) + 
+              Math.pow(worldMousePos.y - agentPos.y, 2)
+            );
+            
+            // If clicked close to agent and player is nearby
+            if (clickDistance <= 200 && agent.isClickableForChat(playerPos)) {
+              startChatWithAgent(agent);
+            }
+          });
+        });
+
+        k.onUpdate(() => {
+          // Don't move if chat is open
+          const { moveX, moveY } = chatOpen ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput()
           cameraSystem.setTarget(player.getMainSprite())
+          // MovementSystem handles both movement and animations
           movementSystem.moveCharacter(player, moveX, moveY)
           collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()
 
-          // Update AI agents
+          // Current state for AI
+          const playerPosition = player.getPosition();
+          const mapBounds = {
+            width: GAME_CONFIG.MAP_WIDTH * GAME_CONFIG.MAP_SCALE,
+            height: GAME_CONFIG.MAP_HEIGHT * GAME_CONFIG.MAP_SCALE
+          };
+
           aiAgents.forEach(agent => {
-            const decision = agent.update();
+            const decision = agent.update(playerPosition, mapBounds);
             if (decision) {
               movementSystem.moveCharacter(agent, decision.moveX, decision.moveY);
               collisionSystem.constrainToMapBounds(agent);
-              
-              if (decision.moveX !== 0 || decision.moveY !== 0) {
-                agent.switchToWalk();
-              } else {
-                agent.switchToIdle();
-              }
             }
           });
         })
@@ -99,6 +147,17 @@ export default function MapView() {
     })
 
     return () => {
+      // Cleanup AI agents
+      aiAgentsRef.current.forEach(agent => {
+        if (agent.destroy) {
+          agent.destroy();
+        }
+      });
+      
+      // Cleanup services
+      aiService.disconnect();
+      chatService.disconnect();
+      
       if (gameRef.current) {
         gameRef.current.quit()
         gameRef.current = null
@@ -106,9 +165,66 @@ export default function MapView() {
     }
   }, [])
 
+  const startChatWithAgent = (agent) => {
+    setCurrentChatAgent(agent);
+    setChatMessages([]);
+    setChatOpen(true);
+    agent.startChat();
+    
+    // Start chat session with backend
+    const success = chatService.startChatSession(
+      agent.name, 
+      agent.name, 
+      (message) => {
+        setChatMessages(prev => [...prev, message]);
+        setIsTyping(false);
+      }
+    );
+    
+    if (!success) {
+      console.error('Failed to start chat session');
+      endChat();
+    }
+  };
+
+  const handleSendMessage = (message) => {
+    if (!currentChatAgent) return;
+    const userMessage = {
+      sender: 'player',
+      content: message,
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setIsTyping(true);
+    
+    chatService.sendMessage(currentChatAgent.name, message);
+  };
+
+  const endChat = () => {
+    if (currentChatAgent) {
+      currentChatAgent.endChat();
+      chatService.endChatSession(currentChatAgent.name);
+    }
+    
+    setChatOpen(false);
+    setCurrentChatAgent(null);
+    setChatMessages([]);
+    setIsTyping(false);
+  };
+
   return (
     <div className="map">
       <canvas ref={canvasRef}></canvas>
+      
+      <ChatWindow
+        isOpen={chatOpen}
+        agentName={currentChatAgent?.name || ''}
+        onClose={endChat}
+        onSendMessage={handleSendMessage}
+        messages={chatMessages}
+        isTyping={isTyping}
+      />
     </div>
   )
 }
