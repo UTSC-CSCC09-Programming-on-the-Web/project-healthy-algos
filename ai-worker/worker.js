@@ -27,15 +27,15 @@ console.log("Socket.IO server running on port 3001");
 async function makeAIDecision(gameContext) {
   console.log("🤖 Making AI decision for agent at:", gameContext.aiPosition);
   
+  const centerX = gameContext.mapBounds.width / 2;
+  const centerY = gameContext.mapBounds.height / 2;
+  const distanceFromCenter = Math.sqrt(
+    Math.pow(gameContext.aiPosition.x - centerX, 2) + 
+    Math.pow(gameContext.aiPosition.y - centerY, 2)
+  );
+  const maxDistance = Math.min(gameContext.mapBounds.width, gameContext.mapBounds.height) * 0.15;
+  
   try {
-    // Calculate center of map and distance from center
-    const centerX = gameContext.mapBounds.width / 2;
-    const centerY = gameContext.mapBounds.height / 2;
-    const distanceFromCenter = Math.sqrt(
-      Math.pow(gameContext.aiPosition.x - centerX, 2) + 
-      Math.pow(gameContext.aiPosition.y - centerY, 2)
-    );
-    const maxDistance = Math.min(gameContext.mapBounds.width, gameContext.mapBounds.height) * 0.2;
     
     const chatCompletion = await openai.chat.completions.create({
       messages: [
@@ -59,22 +59,24 @@ Format:
 }
 
 STRICT RULES:
-- Create EXACTLY 8 actions in sequence (no more, no less)
+- Create EXACTLY 8 actions in sequence
 - At least 6 actions must be "move" actions
 - At most 2 actions can be "idle" 
 - action: "move" or "idle" 
 - direction: "north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest" (only for move actions)
-- duration: 2-4 seconds for each action (shorter durations for more direction changes)
+- duration: 2-4 seconds for each action
 - Total sequence should last about 25-30 seconds
-- CRITICAL: Stay near map center, avoid edges
-- If far from center, prioritize directions toward center
+- Critical: Always prioritize staying near map center
+- If more than 15% away from center, most actions must move toward center
+- If near center, can explore but prefer inward directions
+- Avoid long sequences in same outward direction
 - Mix movement and occasional idle for natural behavior
 
 Respond with JSON only, no other text.`
         },
         { 
           role: "user", 
-          content: `AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: (${centerX}, ${centerY}). Distance from center: ${Math.round(distanceFromCenter)}. Max recommended distance: ${Math.round(maxDistance)}. ${distanceFromCenter > maxDistance ? 'TOO FAR FROM CENTER - prioritize moving toward center!' : 'Good position - can explore freely.'} Player at (${gameContext.playerPosition.x}, ${gameContext.playerPosition.y}). Create action sequence.` 
+          content: `AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: (${centerX}, ${centerY}). Distance from center: ${Math.round(distanceFromCenter)}. Max recommended distance: ${Math.round(maxDistance)}. ${distanceFromCenter > maxDistance ? 'URGENT: TOO FAR FROM CENTER - prioritize moving toward center immediately!' : distanceFromCenter > maxDistance * 0.5 ? 'CAUTION: Getting far from center - bias toward center' : 'Good position - can explore but prefer inward directions'}. Player at (${gameContext.playerPosition.x}, ${gameContext.playerPosition.y}). Create action sequence that keeps AI near center.` 
         },
       ],
       model: "meta-llama/llama-3.3-70b-instruct:free",
@@ -83,8 +85,6 @@ Respond with JSON only, no other text.`
     });
     
     const response = chatCompletion.choices[0].message.content;
-    console.log("🤖 AI Response:", response.substring(0, 200) + (response.length > 200 ? "..." : ""));
-    
     if (!response || response.trim() === '') {
       throw new Error('Empty response from AI model');
     }
@@ -126,49 +126,62 @@ Respond with JSON only, no other text.`
       
     } catch (parseError) {
       console.warn("Failed to parse AI response, using fallback:", parseError.message);
-      const centerX = gameContext.mapBounds.width / 2;
-      const centerY = gameContext.mapBounds.height / 2;
+    
       const deltaX = centerX - gameContext.aiPosition.x;
       const deltaY = centerY - gameContext.aiPosition.y;
       
-      let centerDirection = "north";
+      let primaryDirection = "north";
+      let secondaryDirection = "east";
+      
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        centerDirection = deltaX > 0 ? "east" : "west";
-      } else if (Math.abs(deltaY) > 50) {
-        centerDirection = deltaY > 0 ? "south" : "north";
+        primaryDirection = deltaX > 0 ? "east" : "west";
+        secondaryDirection = deltaY > 0 ? "south" : "north";
+      } else {
+        primaryDirection = deltaY > 0 ? "south" : "north";
+        secondaryDirection = deltaX > 0 ? "east" : "west";
       }
+
+      let diagonalDirection = "northeast";
+      if (deltaX > 0 && deltaY > 0) diagonalDirection = "southeast";
+      else if (deltaX < 0 && deltaY > 0) diagonalDirection = "southwest";
+      else if (deltaX < 0 && deltaY < 0) diagonalDirection = "northwest";
 
       return {
         sequence: [
-          { action: "move", direction: centerDirection, duration: 3 },
-          { action: "move", direction: "north", duration: 3 },
-          { action: "move", direction: "east", duration: 3 },
-          { action: "move", direction: "south", duration: 3 },
-          { action: "move", direction: "west", duration: 3 },
-          { action: "move", direction: "northeast", duration: 4 },
+          { action: "move", direction: primaryDirection, duration: 4 },
+          { action: "move", direction: secondaryDirection, duration: 3 },
+          { action: "move", direction: diagonalDirection, duration: 3 },
+          { action: "move", direction: primaryDirection, duration: 3 },
           { action: "idle", duration: 2 },
-          { action: "move", direction: "northwest", duration: 3 }
+          { action: "move", direction: secondaryDirection, duration: 3 },
+          { action: "move", direction: diagonalDirection, duration: 4 },
+          { action: "move", direction: primaryDirection, duration: 3 }
         ],
-        reasoning: "fallback sequence toward center with exactly 8 actions and shorter durations"
+        reasoning: "fallback sequence strongly biased toward center with calculated directions"
       };
     }
     
   } catch (error) {
-    const centerX = gameContext.mapBounds.width / 2;
-    const centerY = gameContext.mapBounds.height / 2;
+    console.error('AI decision error:', error.message);
+    
+    const deltaX = centerX - gameContext.aiPosition.x;
+    const deltaY = centerY - gameContext.aiPosition.y;
+    
+    let primaryDirection = deltaX > 0 ? "east" : "west";
+    let secondaryDirection = deltaY > 0 ? "south" : "north";
     
     return {
       sequence: [
-        { action: "move", direction: "north", duration: 3 },
-        { action: "move", direction: "east", duration: 3 },
-        { action: "move", direction: "south", duration: 3 },
-        { action: "move", direction: "west", duration: 3 },
-        { action: "move", direction: "northeast", duration: 3 },
-        { action: "move", direction: "northwest", duration: 3 },
+        { action: "move", direction: primaryDirection, duration: 4 },
+        { action: "move", direction: secondaryDirection, duration: 3 },
+        { action: "move", direction: primaryDirection, duration: 3 },
         { action: "idle", duration: 2 },
-        { action: "move", direction: "southeast", duration: 4 }
+        { action: "move", direction: secondaryDirection, duration: 3 },
+        { action: "move", direction: primaryDirection, duration: 3 },
+        { action: "move", direction: secondaryDirection, duration: 3 },
+        { action: "move", direction: primaryDirection, duration: 4 }
       ],
-      reasoning: "Error fallback - exactly 8 actions exploration sequence with shorter durations"
+      reasoning: "Error fallback - center-seeking sequence"
     };
   }
 }
