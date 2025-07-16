@@ -30,9 +30,9 @@ export default function MapView() {
       aiService.initialize(),
       chatService.initialize()
     ]).then(() => {
-      console.log('🎮 Both AI and Chat services initialized');
+      console.log('Both AI and Chat services initialized');
     }).catch(error => {
-      console.error('❌ Failed to initialize services:', error);
+      console.error('Failed to initialize services:', error);
     });
 
     const k = kaplay({
@@ -112,7 +112,7 @@ export default function MapView() {
             );
             
             // If clicked close to agent and player is nearby
-            if (clickDistance <= 200 && agent.isClickableForChat(playerPos)) {
+            if (clickDistance <= 100 && agent.isClickableForChat(playerPos)) {
               startChatWithAgent(agent);
             }
           });
