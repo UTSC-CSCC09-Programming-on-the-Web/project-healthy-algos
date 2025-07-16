@@ -25,7 +25,7 @@ export const io = new Server(3001, {
 console.log("Socket.IO server running on port 3001");
 
 async function makeAIDecision(gameContext) {
-  console.log("🤖 Making AI decision for agent at:", gameContext.aiPosition);
+  console.log("Making AI decision for agent at:", gameContext.aiPosition);
   
   const centerX = gameContext.mapBounds.width / 2;
   const centerY = gameContext.mapBounds.height / 2;
