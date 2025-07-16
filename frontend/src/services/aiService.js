@@ -24,18 +24,18 @@ class AIService {
         });
 
         this.socket.on('connect', () => {
-          console.log('🔌 Connected to AI Worker WebSocket');
+          console.log('Connected to AI Worker WebSocket');
           this.isConnected = true;
           resolve();
         });
 
         this.socket.on('disconnect', () => {
-          console.log('🔌 Disconnected from AI Worker WebSocket');
+          console.log('Disconnected from AI Worker WebSocket');
           this.isConnected = false;
         });
 
         this.socket.on('ai.decision', (data) => {
-          console.log('🤖 AI Decision received:', data);
+          console.log('AI Decision received:', data);
           const callback = this.aiDecisionCallbacks.get(data.aiAgentId);
           if (callback) {
             callback(data.decision);
@@ -68,45 +68,43 @@ class AIService {
     });
   }
 
-  // Subscribe to AI decisions for a specific agent
   subscribeToAIDecisions(aiAgentId, callback) {
     this.aiDecisionCallbacks.set(aiAgentId, callback);
   }
 
-  // Unsubscribe from AI decisions
   unsubscribeFromAIDecisions(aiAgentId) {
     this.aiDecisionCallbacks.delete(aiAgentId);
   }
 
-  // Update game state for AI context
   updateGameState(gameState) {
     this.gameState = gameState;
   }
 
-  // Request AI decision from backend
   async requestAIDecision(aiAgentId, aiPosition, playerPosition, mapBounds) {
     try {
-      const gameState = {
-        aiPosition,
-        playerPosition,
-        mapBounds,
-        timestamp: Date.now(),
-        ...this.gameState
+      const requestBody = {
+        aiAgentId,
+        gameState: {
+          aiPosition,
+          playerPosition,
+          mapBounds,
+          timestamp: Date.now(),
+          ...this.gameState
+        }
       };
-
-      const response = await fetch('http://localhost:3000/api/game-ai/ai-decision', {
+    
+      const response = await fetch('http://localhost:3000/api/game/ai-decision', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          aiAgentId,
-          gameState
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Backend response error:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);
       }
 
       const result = await response.json();

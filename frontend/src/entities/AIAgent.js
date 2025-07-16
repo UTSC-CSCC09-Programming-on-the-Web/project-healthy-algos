@@ -1,5 +1,6 @@
 import { BaseCharacter } from './BaseCharacter';
 import { aiService } from '../services/aiService';
+import { DirectionSystem } from '../systems/DirectionSystem';
 
 export class AIAgent extends BaseCharacter {
   constructor(kaplayContext, agentName, startX = null, startY = null) {
@@ -7,17 +8,14 @@ export class AIAgent extends BaseCharacter {
     this.isPlayer = false;
     this.aiState = "idle";
     this.lastDecisionTime = 0;
-    this.decisionInterval = 5000; // Request AI decision every 5 seconds
-    this.currentMovementDuration = 0;
-    this.movementDuration = 0;
+    this.decisionInterval = 30000; // Request AI decision every 30 seconds
     this.agentType = this.getAgentTypeByName(agentName);
     
-    // AI-specific properties
-    this.lastAIDecision = null;
+    // AI sequence properties
+    this.currentSequence = null;
+    this.currentActionIndex = 0;
+    this.currentActionStartTime = 0;
     this.isWaitingForAIDecision = false;
-    this.fallbackBehavior = true;
-    this.currentTarget = null;
-    this.pathProgress = 0;
     
     // Subscribe to AI decisions
     aiService.subscribeToAIDecisions(agentName, (decision, error) => {
@@ -57,7 +55,6 @@ export class AIAgent extends BaseCharacter {
   }
 
   createSprites() {
-    // Use the agent type's sprite configuration
     const spriteConfig = {
       idle: this.agentType.idle,
       walk: this.agentType.walk
@@ -66,58 +63,7 @@ export class AIAgent extends BaseCharacter {
     return super.createSprites(spriteConfig);
   }
 
-  makeDecision() {
-    const currentTime = Date.now();
-    
-    if (this.currentMovementDuration > 0) {
-      this.currentMovementDuration -= 16; // Approximate frame time (60fps = ~16ms)
-      return this.currentMovement || { moveX: 0, moveY: 0 };
-    }
-    
-    if (currentTime - this.lastDecisionTime < this.decisionInterval) {
-      return this.currentMovement || { moveX: 0, moveY: 0 };
-    }
-
-    this.lastDecisionTime = currentTime;
-
-    const actions = ["idle", "move_random", "move_random", "move_random"];
-    const randomAction = actions[Math.floor(Math.random() * actions.length)];
-
-    switch (randomAction) {
-      case "idle": {
-        this.setState("idle");
-        this.movementDuration = 1000;
-        this.currentMovementDuration = this.movementDuration;
-        this.currentMovement = { moveX: 0, moveY: 0 };
-        return this.currentMovement;
-      }
-        
-      case "move_random": {
-        this.setState("walking");
-        this.movementDuration = 1000 + Math.random() * 1000;
-        this.currentMovementDuration = this.movementDuration;
-        
-        const angle = Math.random() * Math.PI * 2;
-        const speed = 1.0; 
-        
-        this.currentMovement = {
-          moveX: Math.cos(angle) * speed,
-          moveY: Math.sin(angle) * speed
-        };
-        
-        return this.currentMovement;
-      }
-        
-      default: {
-        this.setState("idle");
-        this.currentMovement = { moveX: 0, moveY: 0 };
-        return this.currentMovement;
-      }
-    }
-  }
-
   update(playerPosition = null, mapBounds = null) {
-    // Check if we should request an AI decision
     if (aiService.isReady() && !this.isWaitingForAIDecision && playerPosition && mapBounds) {
       const currentTime = Date.now();
       
@@ -126,13 +72,11 @@ export class AIAgent extends BaseCharacter {
       }
     }
     
-    // Execute current AI decision or fall back to simple behavior
-    if (this.lastAIDecision) {
-      return this.executeAIDecision();
-    } else if (this.fallbackBehavior) {
-      return this.makeDecision();
+    if (this.currentSequence) {
+      return this.executeCurrentAction();
     }
     
+    // Fallback to idle
     return { moveX: 0, moveY: 0 };
   }
 
@@ -158,56 +102,53 @@ export class AIAgent extends BaseCharacter {
     
     if (error) {
       console.error(`AI decision error for ${this.name}:`, error);
-      this.lastAIDecision = null;
+      this.currentSequence = null;
       return;
     }
     
-    if (decision) {
-      console.log(`AI decision received for ${this.name}:`, decision);
-      this.lastAIDecision = decision;
-      this.currentTarget = decision.target;
-      this.pathProgress = 0;
-      
-      // Reset movement duration for new decision
-      this.movementDuration = 2000; // 2 seconds to execute AI decision
-      this.currentMovementDuration = this.movementDuration;
+    if (decision && decision.sequence) {
+      console.log(`AI sequence received for ${this.name}:`, decision);
+      this.currentSequence = decision.sequence;
+      this.currentActionIndex = 0;
+      this.currentActionStartTime = Date.now();
     }
   }
 
-  // Execute the current AI decision
-  executeAIDecision() {
-    if (!this.lastAIDecision) {
+  // Execute the current action in the sequence
+  executeCurrentAction() {
+    if (!this.currentSequence || this.currentActionIndex >= this.currentSequence.length) {
+      this.currentSequence = null;
       return { moveX: 0, moveY: 0 };
     }
     
-    // Check if we should still be executing this decision
-    if (this.currentMovementDuration <= 0) {
-      this.lastAIDecision = null;
-      this.currentTarget = null;
-      return { moveX: 0, moveY: 0 };
-    }
+    const currentAction = this.currentSequence[this.currentActionIndex];
+    const currentTime = Date.now();
+    const actionElapsed = (currentTime - this.currentActionStartTime) / 1000;
     
-    this.currentMovementDuration -= 16; // Approximate frame time
-    
-    const decision = this.lastAIDecision;
-    
-    switch (decision.action) {
-      case "move_to_player":
-      case "move_random": {
-        if (decision.target) {
-          return this.moveToTarget(decision.target);
-        }
+    if (actionElapsed >= currentAction.duration) {
+      this.currentActionIndex++;
+      this.currentActionStartTime = currentTime;
+      
+      if (this.currentActionIndex >= this.currentSequence.length) {
+        this.currentSequence = null;
         return { moveX: 0, moveY: 0 };
+      }
+
+      const newCurrentAction = this.currentSequence[this.currentActionIndex];
+      return this.performAction(newCurrentAction);
+    }
+
+    return this.performAction(currentAction);
+  }
+
+  // Perform a specific action
+  performAction(action) {
+    switch (action.action) {
+      case "move": {
+        return DirectionSystem.getMovementFromDirection(action.direction);
       }
       
       case "idle": {
-        this.setState("idle");
-        return { moveX: 0, moveY: 0 };
-      }
-      
-      case "interact": {
-        // For now, just idle when interacting
-        this.setState("idle");
         return { moveX: 0, moveY: 0 };
       }
       
@@ -217,50 +158,12 @@ export class AIAgent extends BaseCharacter {
     }
   }
 
-  // Move towards a specific target position
-  moveToTarget(target) {
-    if (!target) return { moveX: 0, moveY: 0 };
-    
-    const myPos = this.getPosition();
-    const dx = target.x - myPos.x;
-    const dy = target.y - myPos.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    // If we're close enough to the target, stop moving
-    if (distance < 20) {
-      this.setState("idle");
-      return { moveX: 0, moveY: 0 };
-    }
-    
-    // Move towards target
-    this.setState("walking");
-    const speed = 1.5; // Slightly faster than random movement
-    
-    return {
-      moveX: (dx / distance) * speed,
-      moveY: (dy / distance) * speed
-    };
-  }
-
-  // Cleanup when agent is destroyed
+  // Cleanup agent
   destroy() {
     if (aiService) {
       aiService.unsubscribeFromAIDecisions(this.name);
     }
-  }
-
-  // AI behavior methods for future expansion
-  setTarget(target) {
-    this.target = target;
-  }
-
-  // State
-  setState(newState) {
-    this.aiState = newState;
-  }
-
-  getState() {
-    return this.aiState;
+    super.destroy();
   }
 
   getAgentType() {

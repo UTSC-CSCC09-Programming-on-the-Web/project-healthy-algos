@@ -1,9 +1,9 @@
 import { GAME_CONFIG, SCALED_MAP_WIDTH, SCALED_MAP_HEIGHT, ANIMATIONS } from '../config/gameConfig';
 
 class BaseCharacter {
-  constructor(kaplayContext, characterName = "player", startX = null, startY = null) {
+  constructor(kaplayContext, name = "player", startX = null, startY = null) {
     this.k = kaplayContext;
-    this.characterName = characterName;
+    this.name = name;
     this.sprites = {};
     this.currentAnimation = ANIMATIONS.IDLE;
     this.facingDirection = 1; // 1 for right, -1 for left
@@ -95,17 +95,16 @@ class BaseCharacter {
   // Update facing direction and flip sprites accordingly
   updateFacingDirection(moveX) {
     if (moveX > 0 && this.facingDirection !== 1) {
-      // Moving right
+      // right
       this.facingDirection = 1;
       this.flipSprites(false);
     } else if (moveX < 0 && this.facingDirection !== -1) {
-      // Moving left
+      // left
       this.facingDirection = -1;
       this.flipSprites(true);
     }
   }
 
-  // Flip all sprites horizontally
   flipSprites(shouldFlip) {
     Object.values(this.sprites).forEach(sprite => {
       sprite.flipX = shouldFlip;

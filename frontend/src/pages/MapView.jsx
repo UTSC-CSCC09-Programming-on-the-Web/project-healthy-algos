@@ -83,15 +83,8 @@ export default function MapView() {
 
         k.onUpdate(() => {
           const { moveX, moveY } = inputSystem.getMovementInput()
-
-          if (moveX !== 0 || moveY !== 0) {
-            player.switchToWalk()
-          } else {
-            player.switchToIdle()
-          }
-          
-          // Update camera target after animation switch
           cameraSystem.setTarget(player.getMainSprite())
+          // MovementSystem handles both movement and animations
           movementSystem.moveCharacter(player, moveX, moveY)
           collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()
@@ -103,18 +96,11 @@ export default function MapView() {
             height: GAME_CONFIG.MAP_HEIGHT * GAME_CONFIG.MAP_SCALE
           };
 
-          // Update AI agents with enhanced intelligence
           aiAgents.forEach(agent => {
             const decision = agent.update(playerPosition, mapBounds);
             if (decision) {
               movementSystem.moveCharacter(agent, decision.moveX, decision.moveY);
               collisionSystem.constrainToMapBounds(agent);
-              
-              if (decision.moveX !== 0 || decision.moveY !== 0) {
-                agent.switchToWalk();
-              } else {
-                agent.switchToIdle();
-              }
             }
           });
         })
