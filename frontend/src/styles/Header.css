@@ -1,6 +1,43 @@
 .header {
   display: flex;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: linear-gradient(to right, #e3e6ea, #d9dde2);
+  border-bottom: 1px solid #ccc;
   align-items: center;
-  justify-content: left;
-  padding: 1rem;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0rem;
+}
+
+.header-logo {
+  height: 40px;
+  cursor: pointer;
+  padding-right: 1rem;
+}
+
+.header-button {
+  background: transparent;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: black;
+  border-radius: 8px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.header-button:hover {
+  background-color: #cfd3d8;
+}
+
+.header-username {
+  font-weight: bold;
+  color: black;
+  margin-right: 1rem;
 }
