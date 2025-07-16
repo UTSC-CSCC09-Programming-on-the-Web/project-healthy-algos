@@ -48,13 +48,13 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
   app.get('/', (req, res) => {
     res.json({ 
       status: 'healthy', 
-      message: 'Backend running with full features',
+      message: 'Backend running with full authentication and AI features',
       endpoints: [
+        '/api/game/ai-decision',
+        '/api/game/health',
         '/api/auth/google',
         '/api/auth/logout', 
         '/api/stripe/create-payment-intent',
-        '/api/game/ai-decision',
-        '/api/game/health'
       ]
     });
   });
@@ -65,11 +65,11 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
     console.log(`Full-featured backend running on http://localhost:${PORT}`);
     console.log(`Available endpoints:`);
     console.log(`GET  /                               - Health check`);
-    console.log(`GET  /api/auth/google                - OAuth login`);
-    console.log(`GET  /api/auth/logout               - Logout`);
-    console.log(`POST /api/stripe/create-payment-intent - Stripe payment`);
     console.log(`POST /api/game/ai-decision          - Request AI decision`);
     console.log(`GET  /api/game/health               - AI system health`);
+    console.log(`GET  /api/auth/google               - Google OAuth login`);
+    console.log(`POST /api/auth/logout               - Logout`);
+    console.log(`POST /api/stripe/*                  - Stripe payment endpoints`);
   });
 
 })();
