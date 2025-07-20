@@ -33,21 +33,25 @@ export class AIAgent extends BaseCharacter {
     const agentTypes = {
       'Agent_A': {
         name: 'Agent_A',
+        hair: 'spiky_hair',
         idle: { base: "player_idle_base", hair: "agent_a_idle_spiky_hair" },
         walk: { base: "player_walk_base", hair: "agent_a_walk_spiky_hair" }
       },
       'Agent_B': {
         name: 'Agent_B',
+        hair: 'long_hair',
         idle: { base: "player_idle_base", hair: "agent_b_idle_long_hair" },
         walk: { base: "player_walk_base", hair: "agent_b_walk_long_hair" }
       },
       'Agent_C': {
         name: 'Agent_C',
+        hair: 'curly_hair',
         idle: { base: "player_idle_base", hair: "agent_c_idle_curly_hair" },
         walk: { base: "player_walk_base", hair: "agent_c_walk_curly_hair" }
       },
       'Agent_D': {
         name: 'Agent_D',
+        hair: 'mop_hair',
         idle: { base: "player_idle_base", hair: "agent_d_idle_mop_hair" },
         walk: { base: "player_walk_base", hair: "agent_d_walk_mop_hair" }
       },
@@ -55,21 +59,32 @@ export class AIAgent extends BaseCharacter {
 
     return agentTypes[agentName] || {
       name: agentName || 'Unknown_Agent',
+      hair: 'short_hair',
       idle: { base: "player_idle_base", hair: "player_idle_short_hair" },
       walk: { base: "player_walk_base", hair: "player_walk_short_hair" }
     };
   }
 
   createSprites() {
+    const hairType = this.agentType.hair;
     const spriteConfig = {
       idle: this.agentType.idle,
-      walk: this.agentType.walk
+      walk: this.agentType.walk,
+      // Add action animations for AI agents
+      attack: { base: `player_attack_base`, hair: `player_attack_${hairType}` },
+      axe: { base: `player_axe_base`, hair: `player_axe_${hairType}` },
+      dig: { base: `player_dig_base`, hair: `player_dig_${hairType}` },
+      hammering: { base: `player_hammering_base`, hair: `player_hammering_${hairType}` },
+      jump: { base: `player_jump_base`, hair: `player_jump_${hairType}` },
+      mining: { base: `player_mining_base`, hair: `player_mining_${hairType}` },
+      reeling: { base: `player_reeling_base`, hair: `player_reeling_${hairType}` },
+      watering: { base: `player_watering_base`, hair: `player_watering_${hairType}` }
     };
 
     return super.createSprites(spriteConfig);
   }
 
-  update(playerPosition = null, mapBounds = null) {
+  update(playerPosition = null, mapBounds = null, animationSystem = null) {
     // If in chat, stay idle and don't move
     if (this.isInChat) {
       return { moveX: 0, moveY: 0 };
@@ -90,7 +105,7 @@ export class AIAgent extends BaseCharacter {
     }
     
     if (this.currentSequence) {
-      return this.executeCurrentAction();
+      return this.executeCurrentAction(animationSystem);
     }
     
     // Fallback to idle
@@ -132,7 +147,7 @@ export class AIAgent extends BaseCharacter {
   }
 
   // Execute the current action in the sequence
-  executeCurrentAction() {
+  executeCurrentAction(animationSystem = null) {
     if (!this.currentSequence || this.currentActionIndex >= this.currentSequence.length) {
       this.currentSequence = null;
       return { moveX: 0, moveY: 0 };
@@ -152,14 +167,14 @@ export class AIAgent extends BaseCharacter {
       }
 
       const newCurrentAction = this.currentSequence[this.currentActionIndex];
-      return this.performAction(newCurrentAction);
+      return this.performAction(newCurrentAction, animationSystem);
     }
 
-    return this.performAction(currentAction);
+    return this.performAction(currentAction, animationSystem);
   }
 
   // Perform a specific action
-  performAction(action) {
+  performAction(action, animationSystem = null) {
     switch (action.action) {
       case "move": {
         return DirectionSystem.getMovementFromDirection(action.direction);
@@ -169,10 +184,36 @@ export class AIAgent extends BaseCharacter {
         return { moveX: 0, moveY: 0 };
       }
       
+      case "attack":
+      case "axe":
+      case "dig":
+      case "hammering":
+      case "jump":
+      case "mining":
+      case "reeling":
+      case "watering": {
+        // Trigger animation if animation system is available
+        if (animationSystem) {
+          const duration = (action.duration || 2) * 1000; // Convert to milliseconds
+          animationSystem.queueAnimation(this, action.action, duration);
+        }
+        return { moveX: 0, moveY: 0 }; // Stay in place during action
+      }
+      
       default: {
         return { moveX: 0, moveY: 0 };
       }
     }
+  }
+
+  performRandomAction(animationSystem) {
+    // Randomly choose an action
+    const actions = ['attack', 'jump', 'watering', 'dig', 'mining'];
+    const randomAction = actions[Math.floor(Math.random() * actions.length)];
+    const duration = 1500 + Math.random() * 1000; // 1.5-2.5 seconds
+    
+    animationSystem.queueAnimation(this, randomAction, duration);
+    console.log(`${this.name} performing ${randomAction}`);
   }
 
   // Cleanup agent

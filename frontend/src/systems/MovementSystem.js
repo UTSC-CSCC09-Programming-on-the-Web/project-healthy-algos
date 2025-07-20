@@ -5,7 +5,11 @@ class MovementSystem {
     this.moveSpeed = GAME_CONFIG.MOVE_SPEED;
   }
 
-  moveCharacter(character, moveX, moveY) {
+  moveCharacter(character, moveX, moveY, animationSystem = null) {
+    if (animationSystem && animationSystem.isPlayingAction(character)) {
+      return;
+    }
+
     // Update facing direction before movement
     if (moveX !== 0) {
       character.updateFacingDirection(moveX);

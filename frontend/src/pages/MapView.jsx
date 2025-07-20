@@ -5,6 +5,7 @@ import '../styles/Map.css'
 import { GAME_CONFIG } from '../config/gameConfig'
 import { AssetLoader } from '../systems/AssetLoader'
 import { MovementSystem } from '../systems/MovementSystem'
+import { AnimationSystem } from '../systems/AnimationSystem'
 import { InputSystem } from '../systems/InputSystem'
 import { CollisionSystem } from '../systems/CollisionSystem'
 import { CameraSystem } from '../systems/CameraSystem'
@@ -46,6 +47,7 @@ export default function MapView() {
 
     const assetLoader = new AssetLoader(k)
     const movementSystem = new MovementSystem()
+    const animationSystem = new AnimationSystem()
     const inputSystem = new InputSystem(k)
     const collisionSystem = new CollisionSystem()
     const cameraSystem = new CameraSystem(k)
@@ -104,7 +106,7 @@ export default function MapView() {
           const playerPos = player.getPosition();
           
           // Check if clicked on any AI agent
-          aiAgents.forEach((agent, index) => {
+          aiAgents.forEach((agent) => {
             const agentPos = agent.getPosition();
             const clickDistance = Math.sqrt(
               Math.pow(worldMousePos.x - agentPos.x, 2) + 
@@ -118,12 +120,65 @@ export default function MapView() {
           });
         });
 
+        // Add keyboard controls for player actions
+        k.onKeyPress("1", () => {
+          if (!chatOpen) {
+            animationSystem.queueAnimation(player, "attack", 1500);
+          }
+        });
+
+        k.onKeyPress("2", () => {
+          if (!chatOpen) {
+            animationSystem.queueAnimation(player, "axe", 2000);
+          }
+        });
+
+        k.onKeyPress("3", () => {
+          if (!chatOpen) {
+            animationSystem.queueAnimation(player, "dig", 2500);
+          }
+        });
+
+        k.onKeyPress("4", () => {
+          if (!chatOpen) {
+            animationSystem.queueAnimation(player, "hammering", 3000);
+          }
+        });
+
+        k.onKeyPress("5", () => {
+          if (!chatOpen) {
+            animationSystem.queueAnimation(player, "jump", 1000);
+          }
+        });
+
+        k.onKeyPress("6", () => {
+          if (!chatOpen) {
+            animationSystem.queueAnimation(player, "mining", 2000);
+          }
+        });
+
+        k.onKeyPress("7", () => {
+          if (!chatOpen) {
+            animationSystem.queueAnimation(player, "reeling", 2500);
+          }
+        });
+
+        k.onKeyPress("8", () => {
+          if (!chatOpen) {
+            animationSystem.queueAnimation(player, "watering", 1500);
+          }
+        });
+
         k.onUpdate(() => {
+          // Update animation system
+          animationSystem.update([player, ...aiAgents]);
+          
           // Don't move if chat is open
           const { moveX, moveY } = chatOpen ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput()
           cameraSystem.setTarget(player.getMainSprite())
-          // MovementSystem handles both movement and animations
-          movementSystem.moveCharacter(player, moveX, moveY)
+          
+          // MovementSystem handles both movement and animations, now with animation system integration
+          movementSystem.moveCharacter(player, moveX, moveY, animationSystem)
           collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()
 
@@ -135,9 +190,9 @@ export default function MapView() {
           };
 
           aiAgents.forEach(agent => {
-            const decision = agent.update(playerPosition, mapBounds);
+            const decision = agent.update(playerPosition, mapBounds, animationSystem);
             if (decision) {
-              movementSystem.moveCharacter(agent, decision.moveX, decision.moveY);
+              movementSystem.moveCharacter(agent, decision.moveX, decision.moveY, animationSystem);
               collisionSystem.constrainToMapBounds(agent);
             }
           });
@@ -163,7 +218,7 @@ export default function MapView() {
         gameRef.current = null
       }
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const startChatWithAgent = (agent) => {
     setCurrentChatAgent(agent);
@@ -216,6 +271,22 @@ export default function MapView() {
   return (
     <div className="map">
       <canvas ref={canvasRef}></canvas>
+      
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        background: 'rgba(0,0,0,0.7)',
+        color: 'white',
+        padding: '10px',
+        borderRadius: '5px',
+        fontSize: '12px',
+        fontFamily: 'monospace'
+      }}>
+        <div>Player Actions:</div>
+        <div>1 - Attack | 2 - Axe | 3 - Dig | 4 - Hammering</div>
+        <div>5 - Jump | 6 - Mining | 7 - Reeling | 8 - Watering</div>
+      </div>
       
       <ChatWindow
         isOpen={chatOpen}

@@ -14,10 +14,21 @@ class BaseCharacter {
   }
 
   createSprites(spriteConfig) {
-    // spriteConfig { idle: { base: "name", hair: "name" }, walk: { base: "name", hair: "name" } }
+    // { idle: { base: "name", hair: "name" }, walk: { base: "name", hair: "name" }, attack: { base: "name", hair: "name" }, ... }
     this.spriteConfig = spriteConfig;
     this.createIdleSprites(spriteConfig.idle);
     this.createWalkSprites(spriteConfig.walk);
+    
+    // Create action sprites
+    if (spriteConfig.attack) this.createActionSprites(ANIMATIONS.ATTACK, spriteConfig.attack);
+    if (spriteConfig.axe) this.createActionSprites(ANIMATIONS.AXE, spriteConfig.axe);
+    if (spriteConfig.dig) this.createActionSprites(ANIMATIONS.DIG, spriteConfig.dig);
+    if (spriteConfig.hammering) this.createActionSprites(ANIMATIONS.HAMMERING, spriteConfig.hammering);
+    if (spriteConfig.jump) this.createActionSprites(ANIMATIONS.JUMP, spriteConfig.jump);
+    if (spriteConfig.mining) this.createActionSprites(ANIMATIONS.MINING, spriteConfig.mining);
+    if (spriteConfig.reeling) this.createActionSprites(ANIMATIONS.REELING, spriteConfig.reeling);
+    if (spriteConfig.watering) this.createActionSprites(ANIMATIONS.WATERING, spriteConfig.watering);
+    
     this.switchToIdle();
     return this.sprites;
   }
@@ -60,26 +71,78 @@ class BaseCharacter {
     this.sprites.walkHair.hidden = true;
   }
 
+  createActionSprites(animationType, actionConfig) {
+    const baseKey = `${animationType}Base`;
+    const hairKey = `${animationType}Hair`;
+    
+    this.sprites[baseKey] = this.k.add([
+      this.k.sprite(actionConfig.base),
+      this.k.pos(this.position.x, this.position.y),
+      this.k.anchor("center"),
+      this.k.scale(GAME_CONFIG.PLAYER_SCALE),
+    ]);
+
+    this.sprites[hairKey] = this.k.add([
+      this.k.sprite(actionConfig.hair),
+      this.k.pos(this.position.x, this.position.y),
+      this.k.anchor("center"),
+      this.k.scale(GAME_CONFIG.PLAYER_SCALE),
+    ]);
+
+    this.sprites[baseKey].hidden = true;
+    this.sprites[hairKey].hidden = true;
+  }
+
   switchToIdle() {
     if (this.currentAnimation === ANIMATIONS.IDLE) return;
+    
+    this.hideAllSprites();
     this.currentAnimation = ANIMATIONS.IDLE;
     this.sprites.idleBase.hidden = false;
     this.sprites.idleHair.hidden = false;
-    this.sprites.walkBase.hidden = true;
-    this.sprites.walkHair.hidden = true;
   }
 
   switchToWalk() {
     if (this.currentAnimation === ANIMATIONS.WALK) return;
     
+    this.hideAllSprites();
     this.currentAnimation = ANIMATIONS.WALK;
-    this.sprites.idleBase.hidden = true;
-    this.sprites.idleHair.hidden = true;
     this.sprites.walkBase.hidden = false;
     this.sprites.walkHair.hidden = false;
     
     this.sprites.walkBase.play("walk");
     this.sprites.walkHair.play("walk");
+  }
+
+  switchToAnimation(animationType) {
+    if (this.currentAnimation === animationType) return;
+    this.hideAllSprites();
+    
+    // Show sprites for the requested animation
+    const baseKey = `${animationType}Base`;
+    const hairKey = `${animationType}Hair`;
+    
+    if (this.sprites[baseKey] && this.sprites[hairKey]) {
+      this.currentAnimation = animationType;
+      this.sprites[baseKey].hidden = false;
+      this.sprites[hairKey].hidden = false;
+      this.sprites[baseKey].play(animationType);
+      this.sprites[hairKey].play(animationType);
+    } else {
+      // Fallback to idle
+      console.warn(`Animation ${animationType} not available for ${this.name}, falling back to idle`);
+      this.switchToIdle();
+    }
+  }
+
+  hideAllSprites() {
+    Object.values(this.sprites).forEach(sprite => {
+      sprite.hidden = true;
+    });
+  }
+
+  returnToMovementAnimation() {
+    this.switchToIdle();
   }
 
   updatePosition(deltaX, deltaY) {
