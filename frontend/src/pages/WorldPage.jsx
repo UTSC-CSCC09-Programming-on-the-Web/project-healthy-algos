@@ -34,13 +34,15 @@ export default function WorldPage() {
       credentials: 'include',
     })
       .then((res) => {
+        /*
         if (res.status === 402) {
           navigate('/subscribe');
         } else if (res.status === 401) {
           navigate('/login');
         } else {
           return res.json();
-        }
+        }*/
+       return res.json();
       })
       .then((data) => {
         if (data) {
@@ -111,19 +113,20 @@ export default function WorldPage() {
 
         // Handle clicks on AI agents for chat
         k.onClick(() => {
-          const mousePos = k.mousePos();
+          const screenMousePos = k.mousePos();
+          const worldMousePos = k.toWorld(screenMousePos);
           const playerPos = player.getPosition();
           
           // Check if clicked on any AI agent
-          aiAgents.forEach(agent => {
+          aiAgents.forEach((agent, index) => {
             const agentPos = agent.getPosition();
             const clickDistance = Math.sqrt(
-              Math.pow(mousePos.x - agentPos.x, 2) + 
-              Math.pow(mousePos.y - agentPos.y, 2)
+              Math.pow(worldMousePos.x - agentPos.x, 2) + 
+              Math.pow(worldMousePos.y - agentPos.y, 2)
             );
             
             // If clicked close to agent and player is nearby
-            if (clickDistance <= 30 && agent.isClickableForChat(playerPos)) {
+            if (clickDistance <= 200 && agent.isClickableForChat(playerPos)) {
               startChatWithAgent(agent);
             }
           });

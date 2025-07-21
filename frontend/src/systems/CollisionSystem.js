@@ -11,14 +11,14 @@ class CollisionSystem {
     let newX = pos.x;
     let newY = pos.y;
 
-    if (newX - this.collisionWidth < 0) {
-      newX = this.collisionWidth;
+    if (newX - this.collisionWidth < 330) {
+      newX = 330 + this.collisionWidth;
     }
     if (newX + this.collisionWidth > SCALED_MAP_WIDTH) {
       newX = SCALED_MAP_WIDTH - this.collisionWidth;
     }
-    if (newY - this.collisionHeight < 0) {
-      newY = this.collisionHeight;
+    if (newY - this.collisionHeight < 360) {
+      newY = 360 + this.collisionHeight;
     }
     if (newY + this.collisionHeight > SCALED_MAP_HEIGHT) {
       newY = SCALED_MAP_HEIGHT - this.collisionHeight;
