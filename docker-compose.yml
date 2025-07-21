@@ -38,7 +38,26 @@ services:
       - "5173:5173"
     environment:
       VITE_BACKEND_URL: http://localhost:3000
+      VITE_AI_WORKER_URL: http://localhost:3001
+
     command: npm run dev
+
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - "6379:6379"
+  ai-worker:
+    build: ./ai-worker
+    container_name: ai-worker
+    depends_on:
+      - backend
+      - redis
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./ai-worker/.env
+    command: node worker.js
 
 volumes:
   pgdata:

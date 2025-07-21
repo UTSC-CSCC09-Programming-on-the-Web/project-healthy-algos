@@ -16,7 +16,8 @@ class ChatService {
 
     return new Promise((resolve, reject) => {
       try {
-        this.socket = io('http://localhost:3001', {
+        const socketUrl = import.meta.env.VITE_AI_WORKER_URL || 'http://localhost:3001';
+        this.socket = io(socketUrl, {
           transports: ['websocket'],
           reconnection: true,
           reconnectionAttempts: 5,

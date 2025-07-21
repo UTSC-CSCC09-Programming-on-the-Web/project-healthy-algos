@@ -5,12 +5,14 @@ import { Redis } from "ioredis";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 console.log('Gemini AI client configured');
 
 // Redis setup for WebSocket
-const pubClient = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
+const pubClient = new Redis(process.env.REDIS_URL || "redis://redis:6379");
 const subClient = pubClient.duplicate();
 
 export const io = new Server(3001, {
@@ -384,7 +386,7 @@ io.on('connection', (socket) => {
 // Worker Setup
 const gameAIQueue = new Queue("GameAI", {
   connection: {
-    host: process.env.REDIS_HOST || "localhost",
+    host: process.env.REDIS_HOST || "redis",
     port: process.env.REDIS_PORT || 6379,
   }
 });
