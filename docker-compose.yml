@@ -39,6 +39,8 @@ services:
     environment:
       VITE_BACKEND_URL: http://localhost:3000
       VITE_AI_WORKER_URL: http://localhost:3001
+      # VITE_BACKEND_URL: http://147.182.155.17:3000
+      # VITE_AI_WORKER_URL: http://147.182.155.17:3001
 
     command: npm run dev
 

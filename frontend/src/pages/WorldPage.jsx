@@ -28,9 +28,10 @@ export default function WorldPage() {
   const [currentChatAgent, setCurrentChatAgent] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/world', {
+    fetch(`${API_BASE}/api/world`, {
       credentials: 'include',
     })
       .then((res) => {

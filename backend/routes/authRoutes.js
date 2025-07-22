@@ -7,6 +7,8 @@ const router = express.Router();
 // Initiate login
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 // Handle callback
 router.get(
   '/google/callback',
@@ -16,7 +18,7 @@ router.get(
   }),
   (req, res) => {
     // Redirect to frontend or dashboard after login
-    res.redirect('http://localhost:5173/');
+    res.redirect(FRONTEND_URL);
   }
 );
 

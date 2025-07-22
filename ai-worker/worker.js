@@ -14,14 +14,15 @@ console.log('Gemini AI client configured');
 // Redis setup for WebSocket
 const pubClient = new Redis(process.env.REDIS_URL || "redis://redis:6379");
 const subClient = pubClient.duplicate();
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim());
 
 export const io = new Server(3001, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: allowedOrigins,
     methods: ["GET", "POST"]
   },
   adapter: createAdapter(pubClient, subClient)
-});
+})
 
 console.log("Socket.IO server running on port 3001");
 

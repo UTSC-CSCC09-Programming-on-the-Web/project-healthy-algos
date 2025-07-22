@@ -3,10 +3,11 @@ import '../styles/Header.css';
 
 export default function Header({ user, setUser }) {
   const navigate = useNavigate();
+  const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:3000/api/auth/logout', {
+      await fetch(`${API_BASE}/api/auth/logout`, {
         credentials: 'include',
       });
       setUser(null);

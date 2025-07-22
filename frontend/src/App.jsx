@@ -5,11 +5,12 @@ import AppRouter from './routes/AppRouter';
 // Router setup for the application
 function App() {
   const [user, setUser] = useState(null);
+  const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/auth/me', {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
           credentials: 'include',
         });
         if (res.ok) {

@@ -7,6 +7,7 @@ dotenv.config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const router = express.Router();
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 router.post('/create-checkout-session', async (req, res) => {
   try {
@@ -17,8 +18,8 @@ router.post('/create-checkout-session', async (req, res) => {
         price: process.env.STRIPE_PRICE_ID,
         quantity: 1,
       }],
-      success_url: 'http://localhost:5173/success',
-      cancel_url: 'http://localhost:5173/subscribe',
+      success_url: FRONTEND_URL + '/success',
+      cancel_url: FRONTEND_URL + '/subscribe',
       customer_email: req.user?.email,
     });
 

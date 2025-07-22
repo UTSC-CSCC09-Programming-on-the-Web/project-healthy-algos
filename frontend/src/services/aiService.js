@@ -94,7 +94,9 @@ class AIService {
         }
       };
     
-      const response = await fetch('http://localhost:3000/api/game/ai-decision', {
+      const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+      const response = await fetch(`${API_BASE}/api/game/ai-decision`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
