@@ -60,9 +60,9 @@ export default function AppRouter({ user, setUser }) {
         <Route
           path="/world"
           element={
-            // <RequireAuth user={user}>
+            <RequireAuth user={user}>
               <WorldPage />
-            // </RequireAuth>
+            </RequireAuth>
           }
         />
         <Route

@@ -35,15 +35,15 @@ export default function WorldPage() {
       credentials: 'include',
     })
       .then((res) => {
-        /*
+        
         if (res.status === 402) {
           navigate('/subscribe');
         } else if (res.status === 401) {
           navigate('/login');
         } else {
           return res.json();
-        }*/
-       return res.json();
+        }
+      //  return res.json();
       })
       .then((data) => {
         if (data) {

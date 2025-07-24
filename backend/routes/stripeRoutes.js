@@ -31,7 +31,7 @@ router.post('/create-checkout-session', async (req, res) => {
 });
 
 // --- Webhook route ---
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+const stripeWebhookRouter = async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
 
@@ -64,6 +64,6 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   }
 
   res.status(200).json({ received: true });
-});
+};
 
-export default router;
+export { router as stripeRoutes, stripeWebhookRouter };

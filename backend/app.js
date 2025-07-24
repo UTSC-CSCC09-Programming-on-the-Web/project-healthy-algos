@@ -6,7 +6,7 @@ import "dotenv/config";
 import "./services/oauthService.js";
 import authRoutes from "./routes/authRoutes.js";
 import protectedRoutes from './routes/protectedRoutes.js';
-import stripeRoutes from './routes/stripeRoutes.js';
+import { stripeRoutes, stripeWebhookRouter } from './routes/stripeRoutes.js';
 import gameAIRoutes from './routes/gameAIRoutes.js';
 import { initializeDatabase } from './initDb.js';
 import { createDatabaseIfNotExists } from './createDatabase.js';
@@ -17,7 +17,8 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
   const app = express();
   await initializeDatabase();
 
-  app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookRouter);
+  app.use('/api/stripe', ensureAuthenticated, stripeRoutes);
 
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -58,8 +59,7 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
   app.use(passport.initialize());
   app.use(passport.session());
   app.use('/api/auth', authRoutes);
-  app.use('/api', protectedRoutes);
-  app.use('/api/stripe', ensureAuthenticated, stripeRoutes);
+  app.use('/api', protectedRoutes);  
   app.use('/api/game', gameAIRoutes); 
 
   // Check if server is running
