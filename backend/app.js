@@ -21,8 +21,21 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
 
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+  const allowedOrigins = [
+    'https://i-sim.app',
+    'https://www.i-sim.app',
+    'http://localhost:5173',
+    FRONTEND_URL,
+  ];
+
   app.use(cors({
-    origin: FRONTEND_URL,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS: ' + origin));
+      }
+    },
     credentials: true
   }));
 

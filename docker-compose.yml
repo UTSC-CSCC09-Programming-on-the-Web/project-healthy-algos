@@ -10,15 +10,13 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+
+  redis:
+    image: redis:7
+    restart: always
 
   backend:
     build: ./backend
-    volumes:
-      - ./backend:/app
-    ports:
-      - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/isim
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -26,41 +24,90 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - FRONTEND_URL=https://i-sim.app
+      - NODE_ENV=production
+      - VIRTUAL_HOST=api.i-sim.app
+      - LETSENCRYPT_HOST=api.i-sim.app
+      - LETSENCRYPT_EMAIL=samuel.mantilla@mail.utoronto.ca
     depends_on:
       - db
+    expose:
+      - "3000"
+    env_file:
+    - ./backend/.env.production
+
+  ai-worker:
+    build: ./ai-worker
+    container_name: ai-worker
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NODE_ENV=production
+      # - ALLOWED_ORIGINS=https://i-sim.app,https://www.i-sim.app,https://api.i-sim.app,https://ai.i-sim.app
+      - VIRTUAL_HOST=ai.i-sim.app
+      - LETSENCRYPT_HOST=ai.i-sim.app
+      - LETSENCRYPT_EMAIL=samuel.mantilla@mail.utoronto.ca
+    depends_on:
+      - redis
+      - backend
+    expose:
+      - "3001"
+    command: node worker.js
+    env_file:
+    - ./ai-worker/.env.production
 
   frontend:
     build: ./frontend
     container_name: frontend
+    environment:
+      - NODE_ENV=production
+      - VIRTUAL_HOST=i-sim.app,www.i-sim.app
+      - LETSENCRYPT_HOST=i-sim.app,www.i-sim.app
+      - LETSENCRYPT_EMAIL=samuel.mantilla@mail.utoronto.ca
     depends_on:
       - backend
-    ports:
-      - "5173:5173"
-    environment:
-      VITE_BACKEND_URL: http://localhost:3000
-      VITE_AI_WORKER_URL: http://localhost:3001
-      # VITE_BACKEND_URL: http://147.182.155.17:3000
-      # VITE_AI_WORKER_URL: http://147.182.155.17:3001
+    expose:
+      - "80"
+    env_file:
+    - ./frontend/.env.production
 
-    command: npm run dev
-
-  redis:
-    image: redis:7
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
     restart: always
     ports:
-      - "6379:6379"
-  ai-worker:
-    build: ./ai-worker
-    container_name: ai-worker
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - nginx-certs:/etc/nginx/certs
+      - nginx-vhost:/etc/nginx/vhost.d
+      - nginx-html:/usr/share/nginx/html
+    networks:
+      - default
+
+  letsencrypt:
+    image: nginxproxy/acme-companion
+    container_name: nginx-letsencrypt
+    restart: always
+    environment:
+      - DEFAULT_EMAIL=samuel.mantilla@mail.utoronto.ca
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - nginx-certs:/etc/nginx/certs
+      - nginx-vhost:/etc/nginx/vhost.d
+      - nginx-html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
     depends_on:
-      - backend
-      - redis
-    ports:
-      - "3001:3001"
-    env_file:
-      - ./ai-worker/.env
-    command: node worker.js
+      - nginx-proxy
 
 volumes:
   pgdata:
-
+  nginx-certs:
+  nginx-vhost:
+  nginx-html:
+  acme:
