@@ -22,6 +22,7 @@ export default function WorldPage() {
 
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
+  const chatOpenRef = useRef(false);
   
   // Chat state
   const [chatOpen, setChatOpen] = useState(false);
@@ -60,9 +61,9 @@ export default function WorldPage() {
       aiService.initialize(),
       chatService.initialize()
     ]).then(() => {
-      console.log('🎮 Both AI and Chat services initialized');
+      console.log('Both AI and Chat services initialized');
     }).catch(error => {
-      console.error('❌ Failed to initialize services:', error);
+      console.error('Failed to initialize services:', error);
     });
 
     const k = kaplay({
@@ -73,6 +74,13 @@ export default function WorldPage() {
     });
 
     gameRef.current = k;
+
+    // Make canvas focusable and focused
+    if (canvasRef.current) {
+      canvasRef.current.tabIndex = 0;
+      canvasRef.current.style.outline = 'none'; // Remove focus outline
+      canvasRef.current.focus();
+    }
 
     const assetLoader = new AssetLoader(k);
     const movementSystem = new MovementSystem();
@@ -132,8 +140,15 @@ export default function WorldPage() {
           });
         });
 
+        k.onMousePress(() => {
+          if (canvasRef.current && !chatOpenRef.current) {
+            canvasRef.current.focus();
+          }
+        });
+
         k.onUpdate(() => {
-          const { moveX, moveY } = inputSystem.getMovementInput();
+          // Use ref to get current chat state (avoids stale closure)
+          const { moveX, moveY } = chatOpenRef.current ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput();
 
           cameraSystem.setTarget(player.getMainSprite());
           movementSystem.moveCharacter(player, moveX, moveY);
@@ -176,6 +191,7 @@ export default function WorldPage() {
     setCurrentChatAgent(agent);
     setChatMessages([]);
     setChatOpen(true);
+    chatOpenRef.current = true; 
     
     // Tell the agent it's in chat mode
     agent.startChat();
@@ -220,9 +236,21 @@ export default function WorldPage() {
     }
     
     setChatOpen(false);
+    chatOpenRef.current = false; 
     setCurrentChatAgent(null);
     setChatMessages([]);
     setIsTyping(false);
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        canvasRef.current.focus();
+        const keyEvent = new KeyboardEvent('keyup', {
+          bubbles: true,
+          cancelable: true
+        });
+        canvasRef.current.dispatchEvent(keyEvent);
+      }
+    }, 50);
   };
 
   return loading ? <p>Loading...</p> : (
@@ -236,6 +264,7 @@ export default function WorldPage() {
         onSendMessage={handleSendMessage}
         messages={chatMessages}
         isTyping={isTyping}
+        canvasRef={canvasRef}
       />
     </div>
   );
