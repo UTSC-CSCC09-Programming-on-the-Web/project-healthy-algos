@@ -96,6 +96,12 @@ export class AIAgent extends BaseCharacter {
       this.showChatIndicator = distance <= this.chatHoverDistance;
     }
 
+    // Occasionally perform random actions (10% chance every 5 seconds)
+    if (!this.isPerformingAction && Math.random() < 0.002) { // ~10% chance per 5 seconds at 60fps
+      this.performRandomAction();
+      return { moveX: 0, moveY: 0 };
+    }
+
     if (aiService.isReady() && !this.isWaitingForAIDecision && playerPosition && mapBounds) {
       const currentTime = Date.now();
       
@@ -256,6 +262,56 @@ export class AIAgent extends BaseCharacter {
     this.aiState = "idle";
     this.lastDecisionTime = 0;
     this.showChatIndicator = false;
+  }
+
+  // Action methods for AI agents - repeatable animations
+  performAttack() {
+    return this.performAction("attack");
+  }
+
+  performAxe() {
+    return this.performAction("axe");
+  }
+
+  performDig() {
+    return this.performAction("dig");
+  }
+
+  performHammering() {
+    return this.performAction("hammering");
+  }
+
+  performJump() {
+    return this.performAction("jump");
+  }
+
+  performMining() {
+    return this.performAction("mining");
+  }
+
+  performReeling() {
+    return this.performAction("reeling");
+  }
+
+  performWatering() {
+    return this.performAction("watering");
+  }
+
+  // Generic action performer
+  performRandomAction() {
+    const actions = [
+      () => this.performAttack(),
+      () => this.performAxe(),
+      () => this.performDig(),
+      () => this.performHammering(),
+      () => this.performJump(),
+      () => this.performMining(),
+      () => this.performReeling(),
+      () => this.performWatering()
+    ];
+    
+    const randomAction = actions[Math.floor(Math.random() * actions.length)];
+    return randomAction();
   }
 
   canInteractWith(player) {

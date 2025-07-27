@@ -55,47 +55,37 @@ class Player extends BaseCharacter {
     return super.createSprites(spriteConfig);
   }
 
-  // Action methods for player
-  performAttack(duration = 1500) {
-    return this.performAction(ANIMATIONS.ATTACK, duration);
+  // Action methods for player - repeatable animations
+  performAttack() {
+    return this.performAction(ANIMATIONS.ATTACK);
   }
 
-  performAxe(duration = 2000) {
-    return this.performAction(ANIMATIONS.AXE, duration);
+  performAxe() {
+    return this.performAction(ANIMATIONS.AXE);
   }
 
-  performDig(duration = 2500) {
-    return this.performAction(ANIMATIONS.DIG, duration);
+  performDig() {
+    return this.performAction(ANIMATIONS.DIG);
   }
 
-  performHammering(duration = 3000) {
-    return this.performAction(ANIMATIONS.HAMMERING, duration);
+  performHammering() {
+    return this.performAction(ANIMATIONS.HAMMERING);
   }
 
-  performJump(duration = 1000) {
-    return this.performAction(ANIMATIONS.JUMP, duration);
+  performJump() {
+    return this.performAction(ANIMATIONS.JUMP);
   }
 
-  performMining(duration = 2000) {
-    return this.performAction(ANIMATIONS.MINING, duration);
+  performMining() {
+    return this.performAction(ANIMATIONS.MINING);
   }
 
-  performReeling(duration = 2500) {
-    return this.performAction(ANIMATIONS.REELING, duration);
+  performReeling() {
+    return this.performAction(ANIMATIONS.REELING);
   }
 
-  performWatering(duration = 1500) {
-    return this.performAction(ANIMATIONS.WATERING, duration);
-  }
-
-  performAction(animationType, duration) {
-    return new Promise((resolve) => {
-      this.switchToAnimation(animationType);
-      setTimeout(() => {
-        this.returnToMovementAnimation();
-        resolve();
-      }, duration);
-    });
+  performWatering() {
+    return this.performAction(ANIMATIONS.WATERING);
   }
 }
 

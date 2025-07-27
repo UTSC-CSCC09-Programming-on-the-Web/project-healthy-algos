@@ -1,3 +1,5 @@
+import { ACTION_KEYS } from '../config/gameConfig';
+
 class InputSystem {
   constructor(kaplayContext) {
     this.k = kaplayContext;
@@ -14,6 +16,7 @@ class InputSystem {
 
     return { moveX, moveY };
   }
+  
   isMoving() {
     const { moveX, moveY } = this.getMovementInput();
     return moveX !== 0 || moveY !== 0;
@@ -22,10 +25,21 @@ class InputSystem {
   // Get input for actions
   getActionInput() {
     return {
-      interact: this.k.isKeyPressed("space") || this.k.isKeyPressed("e"),
+      interact: this.k.isKeyPressed("e"), // Remove space from interact, use only E
       menu: this.k.isKeyPressed("escape"),
+      help: this.k.isKeyPressed("h"),
       // More actions later
     };
+  }
+
+  // Get pressed action key
+  getActionKeyPressed() {
+    for (const [key, actionData] of Object.entries(ACTION_KEYS)) {
+      if (this.k.isKeyPressed(key)) {
+        return actionData;
+      }
+    }
+    return null;
   }
 }
 

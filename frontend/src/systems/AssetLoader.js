@@ -8,6 +8,60 @@ class AssetLoader {
   loadAllAssets() {
     this.k.loadSprite("map_background", GAME_CONFIG.ASSETS.MAP_BACKGROUND);
     this.loadCharacterAnimations();
+    this.loadToolSprites();
+  }
+
+  loadToolSprites() {
+    const toolSpeed = 8; // for synchronization with character animations
+    
+    this.k.loadSprite("tool_attack", GAME_CONFIG.ASSETS.TOOL_ATTACK, {
+      sliceX: 10,
+      anims: {
+        attack: { from: 0, to: 9, speed: toolSpeed, loop: true }
+      }
+    });
+    
+    this.k.loadSprite("tool_axe", GAME_CONFIG.ASSETS.TOOL_AXE, {
+      sliceX: 10,
+      anims: {
+        axe: { from: 0, to: 9, speed: toolSpeed, loop: true }
+      }
+    });
+    
+    this.k.loadSprite("tool_dig", GAME_CONFIG.ASSETS.TOOL_DIG, {
+      sliceX: 13,
+      anims: {
+        dig: { from: 0, to: 12, speed: toolSpeed, loop: true }
+      }
+    });
+    
+    this.k.loadSprite("tool_hammering", GAME_CONFIG.ASSETS.TOOL_HAMMERING, {
+      sliceX: 23,
+      anims: {
+        hammering: { from: 0, to: 22, speed: toolSpeed, loop: true }
+      }
+    });
+    
+    this.k.loadSprite("tool_mining", GAME_CONFIG.ASSETS.TOOL_MINING, {
+      sliceX: 10,
+      anims: {
+        mining: { from: 0, to: 9, speed: toolSpeed, loop: true }
+      }
+    });
+    
+    this.k.loadSprite("tool_reeling", GAME_CONFIG.ASSETS.TOOL_REELING, {
+      sliceX: 13,
+      anims: {
+        reeling: { from: 0, to: 12, speed: toolSpeed, loop: true }
+      }
+    });
+    
+    this.k.loadSprite("tool_watering", GAME_CONFIG.ASSETS.TOOL_WATERING, {
+      sliceX: 5,
+      anims: {
+        watering: { from: 0, to: 4, speed: toolSpeed, loop: true }
+      }
+    });
   }
 
   loadCharacterAnimations() {

@@ -9,6 +9,7 @@ import { MovementSystem } from '../systems/MovementSystem';
 import { InputSystem } from '../systems/InputSystem';
 import { CollisionSystem } from '../systems/CollisionSystem';
 import { CameraSystem } from '../systems/CameraSystem';
+import { HelpOverlay } from '../systems/HelpOverlay';
 import { Player } from '../entities/Player';
 import { AIAgent } from '../entities/AIAgent';
 import { aiService } from '../services/aiService';
@@ -87,6 +88,7 @@ export default function WorldPage() {
     const inputSystem = new InputSystem(k);
     const collisionSystem = new CollisionSystem();
     const cameraSystem = new CameraSystem(k);
+    const helpOverlay = new HelpOverlay(k);
 
     assetLoader.loadAllAssets();
 
@@ -149,6 +151,25 @@ export default function WorldPage() {
         k.onUpdate(() => {
           // Use ref to get current chat state (avoids stale closure)
           const { moveX, moveY } = chatOpenRef.current ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput();
+
+          // Handle action inputs (only when not in chat)
+          if (!chatOpenRef.current) {
+            const actionInput = inputSystem.getActionInput();
+            const actionKey = inputSystem.getActionKeyPressed();
+            
+            // Toggle help overlay (works regardless of help visibility)
+            if (actionInput.help) {
+              helpOverlay.toggle();
+            }
+            
+            // Perform action if key pressed and help is not visible
+            if (actionKey && !helpOverlay.isHelpVisible()) {
+              const actionMethod = `perform${actionKey.action.charAt(0).toUpperCase() + actionKey.action.slice(1).toLowerCase()}`;
+              if (typeof player[actionMethod] === 'function') {
+                player[actionMethod]();
+              }
+            }
+          }
 
           cameraSystem.setTarget(player.getMainSprite());
           movementSystem.moveCharacter(player, moveX, moveY);
@@ -256,6 +277,9 @@ export default function WorldPage() {
   return loading ? <p>Loading...</p> : (
     <div className="map">
       <canvas ref={canvasRef}></canvas>
+      <div className="help-indicator">
+        Press H for Help
+      </div>
       
       <ChatWindow
         isOpen={chatOpen}

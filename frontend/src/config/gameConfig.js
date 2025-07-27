@@ -11,6 +11,17 @@ export const ANIMATIONS = {
   WATERING: "watering"
 }
 
+export const ACTION_KEYS = {
+  "1": { action: "ATTACK", name: "Attack" },
+  "2": { action: "AXE", name: "Axe" },
+  "3": { action: "DIG", name: "Dig" },
+  "4": { action: "HAMMERING", name: "Hammering" },
+  "space": { action: "JUMP", name: "Jump" },
+  "5": { action: "MINING", name: "Mining" },
+  "6": { action: "REELING", name: "Reeling" },
+  "7": { action: "WATERING", name: "Watering" }
+}
+
 export const GAME_CONFIG = {
   // Canvas settings
   CANVAS_WIDTH: 1080,
@@ -114,6 +125,15 @@ export const GAME_CONFIG = {
     WATERING_LONG_HAIR: "/assets/Sunnyside/Characters/Human/WATERING/longhair_watering_strip5.png",
     WATERING_CURLY_HAIR: "/assets/Sunnyside/Characters/Human/WATERING/curlyhair_watering_strip5.png",
     WATERING_MOP_HAIR: "/assets/Sunnyside/Characters/Human/WATERING/mophair_watering_strip5.png",
+    
+        // Tool sprites for actions
+    TOOL_ATTACK: "assets/Sunnyside/Characters/Human/ATTACK/tools_attack_strip10.png",
+    TOOL_AXE: "assets/Sunnyside/Characters/Human/AXE/tools_axe_strip10.png", 
+    TOOL_DIG: "assets/Sunnyside/Characters/Human/DIG/tools_dig_strip13.png",
+    TOOL_HAMMERING: "assets/Sunnyside/Characters/Human/HAMMERING/tools_hamering_strip23.png",
+    TOOL_MINING: "assets/Sunnyside/Characters/Human/MINING/tools_mining_strip10.png",
+    TOOL_REELING: "assets/Sunnyside/Characters/Human/REELING/tools_reeling_strip13.png",
+    TOOL_WATERING: "assets/Sunnyside/Characters/Human/WATERING/tools_watering_strip5.png"
   }
 };
 

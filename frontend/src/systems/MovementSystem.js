@@ -6,10 +6,6 @@ class MovementSystem {
   }
 
   moveCharacter(character, moveX, moveY, animationSystem = null) {
-    if (animationSystem && animationSystem.isPlayingAction(character)) {
-      return;
-    }
-
     // Update facing direction before movement
     if (moveX !== 0) {
       character.updateFacingDirection(moveX);
@@ -17,9 +13,14 @@ class MovementSystem {
 
     // Handle animation state based on movement
     if (moveX !== 0 || moveY !== 0) {
-      character.switchToWalk();
+      // Cancel animations when movement starts
+      if (character.cancelActionIfMoving && character.cancelActionIfMoving()) {
+        character.switchToWalk();
+      }
     } else {
-      character.switchToIdle();
+      if (!character.isPlayingAction || !character.isPlayingAction()) {
+        character.switchToIdle();
+      }
     }
 
     // Normalize diagonal movement to maintain consistent speed
