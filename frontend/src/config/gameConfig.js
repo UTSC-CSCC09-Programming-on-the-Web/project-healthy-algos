@@ -19,7 +19,8 @@ export const ACTION_KEYS = {
   "space": { action: "JUMP", name: "Jump" },
   "5": { action: "MINING", name: "Mining" },
   "6": { action: "REELING", name: "Reeling" },
-  "7": { action: "WATERING", name: "Watering" }
+  "7": { action: "WATERING", name: "Watering" },
+  "h": { action: "HELP", name: "Help" }
 }
 
 export const GAME_CONFIG = {

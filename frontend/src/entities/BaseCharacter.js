@@ -7,9 +7,9 @@ class BaseCharacter {
     this.sprites = {};
     this.currentAnimation = ANIMATIONS.IDLE;
     this.facingDirection = 1; // 1 for right, -1 for left
-    this.isPerformingAction = false; // Track if character is performing an action
-    this.actionTimeout = null; // Store action timeout for cleanup
-    this.toolSprite = null; // Track current tool sprite
+    this.isPerformingAction = false; 
+    this.actionTimeout = null; 
+    this.toolSprite = null; 
     this.position = {
       x: startX || (SCALED_MAP_WIDTH / 2),
       y: startY || (SCALED_MAP_HEIGHT / 2)
@@ -100,24 +100,21 @@ class BaseCharacter {
     if (this.currentAnimation === ANIMATIONS.IDLE) return;
     
     this.hideAllSprites();
-    this.hideToolSprite(); // Hide tool sprite when going to idle
+    this.hideToolSprite(); 
     this.currentAnimation = ANIMATIONS.IDLE;
     this.sprites.idleBase.hidden = false;
     this.sprites.idleHair.hidden = false;
     
-    // Start playing the idle animation with loop
     this.sprites.idleBase.play("idle", { loop: true });
     this.sprites.idleHair.play("idle", { loop: true });
   }
 
   switchToWalk() {
     if (this.currentAnimation === ANIMATIONS.WALK) return;
-    
-    // Cancel any stationary action before walking
     this.cancelActionIfMoving();
     
     this.hideAllSprites();
-    this.hideToolSprite(); // Hide tool sprite when walking
+    this.hideToolSprite();
     this.currentAnimation = ANIMATIONS.WALK;
     this.sprites.walkBase.hidden = false;
     this.sprites.walkHair.hidden = false;
@@ -144,8 +141,7 @@ class BaseCharacter {
       sprite.pos.x = this.position.x;
       sprite.pos.y = this.position.y;
     });
-    
-    // Update tool sprite position
+
     this.updateToolPosition();
   }
 
@@ -166,7 +162,7 @@ class BaseCharacter {
     Object.values(this.sprites).forEach(sprite => {
       sprite.flipX = shouldFlip;
     });
-    // Update tool position when facing direction changes
+
     this.updateToolPosition();
   }
 
@@ -189,18 +185,15 @@ class BaseCharacter {
       sprite.pos.x = x;
       sprite.pos.y = y;
     });
-    
-    // Update tool position
+
     this.updateToolPosition();
   }
 
   destroy() {
-    // Clear any pending action timeouts
     if (this.actionTimeout) {
       clearTimeout(this.actionTimeout);
     }
-    
-    // Clean up tool sprite
+
     this.hideToolSprite();
     
     Object.values(this.sprites).forEach(sprite => {
@@ -215,7 +208,6 @@ class BaseCharacter {
   }
 
   isStationaryAction(animationType) {
-    // Actions that require standing still (jump is excluded)
     const stationaryActions = [
       ANIMATIONS.ATTACK,
       ANIMATIONS.AXE,
@@ -229,7 +221,6 @@ class BaseCharacter {
   }
 
   canPerformAction() {
-    // Can only perform stationary actions when not moving
     return !this.isMoving();
   }
 
@@ -238,7 +229,6 @@ class BaseCharacter {
   }
 
   cancelActionIfMoving() {
-    // Cancel current action if it's a stationary action
     if (this.isPerformingAction && this.isStationaryAction(this.currentAnimation)) {
       this.stopAction();
       return true;
@@ -247,12 +237,10 @@ class BaseCharacter {
   }
 
   performAction(animationType) {
-    // Check if this is a stationary action and if we can perform it
     if (this.isStationaryAction(animationType) && !this.canPerformAction()) {
       return Promise.reject(new Error("Cannot perform action while moving"));
     }
 
-    // Clear any existing action timeout
     if (this.actionTimeout) {
       clearTimeout(this.actionTimeout);
       this.actionTimeout = null;
@@ -260,46 +248,38 @@ class BaseCharacter {
 
     this.isPerformingAction = true;
     this.switchToAnimation(animationType);
-    
-    // No timeout - action continues until interrupted
+
     return Promise.resolve();
   }
 
   stopAction() {
-    // Clear any existing action timeout
     if (this.actionTimeout) {
       clearTimeout(this.actionTimeout);
       this.actionTimeout = null;
     }
     
     this.isPerformingAction = false;
-    this.hideToolSprite(); // Hide tool sprite when stopping action
+    this.hideToolSprite(); 
     this.returnToMovementAnimation();
   }
 
   returnToMovementAnimation() {
-    // Return to appropriate animation based on current state
     this.switchToIdle();
   }
 
   // Tool sprite management
   showToolSprite(toolName) {
-    // Remove existing tool sprite if any
+    // Remove existing tool sprite
     this.hideToolSprite();
     
     if (toolName) {
-      // Create tool sprite at initial position (will be updated by updateToolPosition)
       this.toolSprite = this.k.add([
         this.k.sprite(`tool_${toolName}`),
-        this.k.pos(this.position.x, this.position.y), // Initial position, will be updated
+        this.k.pos(this.position.x, this.position.y),
         this.k.anchor("center"),
         this.k.scale(GAME_CONFIG.PLAYER_SCALE),
-        this.k.z(10) // Ensure tool appears above character
+        this.k.z(10) 
       ]);
-      
-      // Don't start animation here - it will be started in switchToAnimation for sync
-      
-      // Set proper position based on facing direction and action
       this.updateToolPosition();
     }
   }

@@ -149,21 +149,18 @@ export default function WorldPage() {
         });
 
         k.onUpdate(() => {
-          // Use ref to get current chat state (avoids stale closure)
+          // Use ref to get current chat state
           const { moveX, moveY } = chatOpenRef.current ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput();
 
-          // Handle action inputs (only when not in chat)
           if (!chatOpenRef.current) {
-            const actionInput = inputSystem.getActionInput();
             const actionKey = inputSystem.getActionKeyPressed();
             
-            // Toggle help overlay (works regardless of help visibility)
-            if (actionInput.help) {
+            // Help overlay
+            if (actionKey && actionKey.action === "HELP") {
               helpOverlay.toggle();
             }
             
-            // Perform action if key pressed and help is not visible
-            if (actionKey && !helpOverlay.isHelpVisible()) {
+            if (actionKey && actionKey.action !== "HELP" && !helpOverlay.isHelpVisible()) {
               const actionMethod = `perform${actionKey.action.charAt(0).toUpperCase() + actionKey.action.slice(1).toLowerCase()}`;
               if (typeof player[actionMethod] === 'function') {
                 player[actionMethod]();
@@ -213,8 +210,6 @@ export default function WorldPage() {
     setChatMessages([]);
     setChatOpen(true);
     chatOpenRef.current = true; 
-    
-    // Tell the agent it's in chat mode
     agent.startChat();
     
     // Start chat session with backend

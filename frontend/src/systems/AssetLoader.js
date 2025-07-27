@@ -12,7 +12,7 @@ class AssetLoader {
   }
 
   loadToolSprites() {
-    const toolSpeed = 8; // for synchronization with character animations
+    const toolSpeed = 8; 
     
     this.k.loadSprite("tool_attack", GAME_CONFIG.ASSETS.TOOL_ATTACK, {
       sliceX: 10,
@@ -74,7 +74,6 @@ class AssetLoader {
       'mop_hair': 'MOP_HAIR'
     };
 
-    // Define animation types with their frame configurations
     const animationConfigs = {
       'idle': { frames: 9, speed: 8, from: 0, to: 8 },
       'walk': { frames: 8, speed: 12, from: 0, to: 7 },
@@ -88,7 +87,6 @@ class AssetLoader {
       'watering': { frames: 5, speed: 8, from: 0, to: 4 }
     };
 
-    // Load all combinations of animations and hair types
     Object.entries(animationConfigs).forEach(([animType, config]) => {
       Object.entries(hairTypes).forEach(([hairKey, hairAssetKey]) => {
         const assetKey = `${animType.toUpperCase()}_${hairAssetKey}`;
@@ -103,7 +101,7 @@ class AssetLoader {
                 from: config.from,
                 to: config.to,
                 speed: config.speed,
-                loop: animType === 'idle' || animType === 'walk' // Only loop idle and walk
+                loop: animType === 'idle' || animType === 'walk'
               }
             }
           });

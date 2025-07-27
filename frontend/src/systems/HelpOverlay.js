@@ -79,11 +79,8 @@ export class HelpOverlay {
 
     // Movement controls
     const movementText = [
-      "MOVEMENT:",
       "WASD / Arrow Keys - Move",
       "Click Agent - Start Chat",
-      "",
-      "ACTIONS (Repeatable):"
     ];
 
     movementText.forEach((text, index) => {
