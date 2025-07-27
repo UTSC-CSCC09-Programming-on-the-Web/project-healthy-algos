@@ -5,7 +5,7 @@ class MovementSystem {
     this.moveSpeed = GAME_CONFIG.MOVE_SPEED;
   }
 
-  moveCharacter(character, moveX, moveY, animationSystem = null) {
+  moveCharacter(character, moveX, moveY) {
     // Update facing direction before movement
     if (moveX !== 0) {
       character.updateFacingDirection(moveX);
@@ -13,12 +13,12 @@ class MovementSystem {
 
     // Handle animation state based on movement
     if (moveX !== 0 || moveY !== 0) {
-      // Cancel animations when movement starts
-      if (character.cancelActionIfMoving && character.cancelActionIfMoving()) {
-        character.switchToWalk();
-      }
+      // Cancel stationary actions when movement starts
+      character.cancelActionIfMoving();
+      character.switchToWalk();
     } else {
-      if (!character.isPlayingAction || !character.isPlayingAction()) {
+      // Only switch to idle if not performing an action
+      if (!character.isPlayingAction()) {
         character.switchToIdle();
       }
     }

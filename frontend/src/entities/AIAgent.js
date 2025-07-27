@@ -84,8 +84,8 @@ export class AIAgent extends BaseCharacter {
     return super.createSprites(spriteConfig);
   }
 
-  update(playerPosition = null, mapBounds = null, animationSystem = null) {
-    // If in chat, stay idle and don't move
+  update(playerPosition = null, mapBounds = null) {
+    // If in chat, stay idle
     if (this.isInChat) {
       return { moveX: 0, moveY: 0 };
     }
@@ -96,8 +96,7 @@ export class AIAgent extends BaseCharacter {
       this.showChatIndicator = distance <= this.chatHoverDistance;
     }
 
-    // Occasionally perform random actions (10% chance every 5 seconds)
-    if (!this.isPerformingAction && Math.random() < 0.002) { // ~10% chance per 5 seconds at 60fps
+    if (!this.isPerformingAction && Math.random() < 0.002) { 
       this.performRandomAction();
       return { moveX: 0, moveY: 0 };
     }
@@ -111,7 +110,7 @@ export class AIAgent extends BaseCharacter {
     }
     
     if (this.currentSequence) {
-      return this.executeCurrentAction(animationSystem);
+      return this.executeCurrentAction();
     }
     
     // Fallback to idle
@@ -153,34 +152,29 @@ export class AIAgent extends BaseCharacter {
   }
 
   // Execute the current action in the sequence
-  executeCurrentAction(animationSystem = null) {
+  executeCurrentAction() {
     if (!this.currentSequence || this.currentActionIndex >= this.currentSequence.length) {
       this.currentSequence = null;
       return { moveX: 0, moveY: 0 };
     }
-    
+
     const currentAction = this.currentSequence[this.currentActionIndex];
-    const currentTime = Date.now();
-    const actionElapsed = (currentTime - this.currentActionStartTime) / 1000;
     
-    if (actionElapsed >= currentAction.duration) {
+    if (currentAction.completed) {
       this.currentActionIndex++;
-      this.currentActionStartTime = currentTime;
       
       if (this.currentActionIndex >= this.currentSequence.length) {
         this.currentSequence = null;
         return { moveX: 0, moveY: 0 };
       }
-
+      
       const newCurrentAction = this.currentSequence[this.currentActionIndex];
-      return this.performAction(newCurrentAction, animationSystem);
+      return this.performAction(newCurrentAction);
     }
-
-    return this.performAction(currentAction, animationSystem);
+    
+    return this.performAction(currentAction);
   }
-
-  // Perform a specific action
-  performAction(action, animationSystem = null) {
+  performAction(action) {
     switch (action.action) {
       case "move": {
         return DirectionSystem.getMovementFromDirection(action.direction);
@@ -198,12 +192,11 @@ export class AIAgent extends BaseCharacter {
       case "mining":
       case "reeling":
       case "watering": {
-        // Trigger animation if animation system is available
-        if (animationSystem) {
-          const duration = (action.duration || 2) * 1000; // Convert to milliseconds
-          animationSystem.queueAnimation(this, action.action, duration);
+        const actionMethod = `perform${action.action.charAt(0).toUpperCase() + action.action.slice(1)}`;
+        if (typeof this[actionMethod] === 'function') {
+          this[actionMethod]();
         }
-        return { moveX: 0, moveY: 0 }; // Stay in place during action
+        return { moveX: 0, moveY: 0 };
       }
       
       default: {
@@ -212,14 +205,14 @@ export class AIAgent extends BaseCharacter {
     }
   }
 
-  performRandomAction(animationSystem) {
-    // Randomly choose an action
-    const actions = ['attack', 'jump', 'watering', 'dig', 'mining'];
+  performRandomAction() {
+    const actions = ['ATTACK', 'JUMP', 'WATERING', 'DIG', 'MINING'];
     const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    const duration = 1500 + Math.random() * 1000; // 1.5-2.5 seconds
-    
-    animationSystem.queueAnimation(this, randomAction, duration);
-    console.log(`${this.name} performing ${randomAction}`);
+    const actionMethod = `perform${randomAction.charAt(0).toUpperCase() + randomAction.slice(1).toLowerCase()}`;
+    if (typeof this[actionMethod] === 'function') {
+      this[actionMethod]();
+      console.log(`${this.name} performing ${randomAction.toLowerCase()}`);
+    }
   }
 
   // Cleanup agent
@@ -263,8 +256,8 @@ export class AIAgent extends BaseCharacter {
     this.lastDecisionTime = 0;
     this.showChatIndicator = false;
   }
-
-  // Action methods for AI agents - repeatable animations
+  
+  // Action methods
   performAttack() {
     return this.performAction("attack");
   }

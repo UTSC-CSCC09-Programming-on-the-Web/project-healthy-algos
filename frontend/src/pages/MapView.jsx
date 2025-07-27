@@ -177,7 +177,6 @@ export default function MapView() {
           const { moveX, moveY } = chatOpen ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput()
           cameraSystem.setTarget(player.getMainSprite())
           
-          // MovementSystem handles both movement and animations, now with animation system integration
           movementSystem.moveCharacter(player, moveX, moveY, animationSystem)
           collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()
@@ -218,7 +217,7 @@ export default function MapView() {
         gameRef.current = null
       }
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const startChatWithAgent = (agent) => {
     setCurrentChatAgent(agent);
