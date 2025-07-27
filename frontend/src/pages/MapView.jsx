@@ -120,7 +120,6 @@ export default function MapView() {
           });
         });
 
-        // Add keyboard controls for player actions
         k.onKeyPress("1", () => {
           if (!chatOpen) {
             animationSystem.queueAnimation(player, "attack", 1500);
@@ -170,13 +169,9 @@ export default function MapView() {
         });
 
         k.onUpdate(() => {
-          // Update animation system
           animationSystem.update([player, ...aiAgents]);
-          
-          // Don't move if chat is open
           const { moveX, moveY } = chatOpen ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput()
           cameraSystem.setTarget(player.getMainSprite())
-          
           movementSystem.moveCharacter(player, moveX, moveY, animationSystem)
           collisionSystem.constrainToMapBounds(player)
           cameraSystem.update()

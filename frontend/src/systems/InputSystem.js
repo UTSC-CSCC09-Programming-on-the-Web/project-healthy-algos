@@ -22,7 +22,6 @@ class InputSystem {
     return moveX !== 0 || moveY !== 0;
   }
 
-  // Get pressed action key (unified system for all actions)
   getActionKeyPressed() {
     for (const [key, actionData] of Object.entries(ACTION_KEYS)) {
       if (this.k.isKeyPressed(key)) {
