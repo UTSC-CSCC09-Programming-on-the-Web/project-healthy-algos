@@ -93,14 +93,22 @@ class BaseCharacter {
   }
 
   updatePosition(deltaX, deltaY) {
-    this.position.x += deltaX;
-    this.position.y += deltaY;
+  this.position.x += deltaX;
+  this.position.y += deltaY;
 
-    Object.values(this.sprites).forEach(sprite => {
-      sprite.pos.x = this.position.x;
-      sprite.pos.y = this.position.y;
-    });
-  }
+  Object.entries(this.sprites).forEach(([key, sprite]) => {
+    if (!sprite) return;
+
+    sprite.pos.x = this.position.x;
+    sprite.pos.y = this.position.y;
+
+    // Ensure hair is layered above base
+    const isHair = key.toLowerCase().includes("hair");
+    sprite.z = this.position.y + (isHair ? 1 : 0);
+  });
+
+  // console.log("👣 Updated pos:", this.position);
+}
 
   // Update facing direction and flip sprites accordingly
   updateFacingDirection(moveX) {
@@ -135,11 +143,7 @@ class BaseCharacter {
   setPosition(x, y) {
     this.position.x = x;
     this.position.y = y;
-    
-    Object.values(this.sprites).forEach(sprite => {
-      sprite.pos.x = x;
-      sprite.pos.y = y;
-    });
+    this.updatePosition(0, 0); // apply position without movement delta
   }
 
   destroy() {

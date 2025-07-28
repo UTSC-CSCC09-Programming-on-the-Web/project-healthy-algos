@@ -35,6 +35,52 @@ class CollisionSystem {
       return distance <= radius;
     });
   }
+
+  checkAABBCollision(a, b) {
+    return (
+      a.x < b.x + b.width &&
+      a.x + a.width > b.x &&
+      a.y < b.y + b.height &&
+      a.y + a.height > b.y
+    );
+  }
+
+  resolveCharacterObjectCollision(character, objects) {
+    const prev = character.prevPos;
+    const curr = character.getPosition();
+
+    const deltaX = curr.x - prev.x;
+    const deltaY = curr.y - prev.y;
+
+    const makeBox = (x, y) => ({
+      x: x - 10,
+      y: y + 16,
+      width: 20,
+      height: 10,
+    });
+
+    const box = makeBox(curr.x, curr.y);
+    const collided = objects.some(obj => this.checkAABBCollision(box, obj.collider));
+    if (!collided) return;
+
+    // Try horizontal-only
+    character.revertToPreviousPosition();
+    character.savePreviousPosition();
+    character.updatePosition(deltaX, 0);
+    const boxX = makeBox(character.getPosition().x, character.getPosition().y);
+    if (!objects.some(obj => this.checkAABBCollision(boxX, obj.collider))) return;
+
+    // Try vertical-only
+    character.revertToPreviousPosition();
+    character.savePreviousPosition();
+    character.updatePosition(0, deltaY);
+    const boxY = makeBox(character.getPosition().x, character.getPosition().y);
+    if (!objects.some(obj => this.checkAABBCollision(boxY, obj.collider))) return;
+
+    // Fully blocked
+    character.revertToPreviousPosition();
+  }
+
 }
 
 export { CollisionSystem };

@@ -40,6 +40,8 @@ export const GAME_CONFIG = {
     IDLE_CURLY_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/curlyhair_idle_strip9.png",
     WALK_MOP_HAIR: "/assets/Sunnyside/Characters/Human/WALKING/mophair_walk_strip8.png",
     IDLE_MOP_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/mophair_idle_strip9.png",
+    OAK_TREE: "/assets/Sunnyside/Elements/Plants/spr_deco_tree_01_strip4.png",
+    PINE_TREE: "/assets/Sunnyside/Elements/Plants/spr_deco_tree_02_strip4.png",
   }
 };
 

@@ -15,6 +15,7 @@ import { AIAgent } from '../entities/AIAgent';
 import { aiService } from '../services/aiService';
 import { chatService } from '../services/chatService';
 import ChatWindow from '../components/ChatWindow';
+import { createTree } from '../systems/CreateTree';
 
 export default function WorldPage() {
   const [loading, setLoading] = useState(true);
@@ -91,6 +92,11 @@ export default function WorldPage() {
 
       k.onLoad(() => {
         k.scene('main', () => {
+          const trees = [];
+          //Tree generation
+          trees.push(createTree(k, 1200, 900, "oak"));
+          trees.push(createTree(k, 1000, 800, "pine"));
+
           k.add([
             k.sprite('map_background'),
             k.pos(0, 0),
@@ -155,6 +161,11 @@ export default function WorldPage() {
               if (decision) {
                 movementSystem.moveCharacter(agent, decision.moveX, decision.moveY, mapMask);
               }
+            });
+
+            collisionSystem.resolveCharacterObjectCollision(player, trees);
+            aiAgents.forEach(agent => {
+              collisionSystem.resolveCharacterObjectCollision(agent, trees);
             });
           });
         });
