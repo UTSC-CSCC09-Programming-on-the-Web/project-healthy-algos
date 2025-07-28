@@ -18,8 +18,8 @@ router.post('/create-checkout-session', async (req, res) => {
         price: process.env.STRIPE_PRICE_ID,
         quantity: 1,
       }],
-      success_url: FRONTEND_URL + '/success',
-      cancel_url: FRONTEND_URL + '/subscribe',
+      success_url: `${FRONTEND_URL}/success`,
+      cancel_url: `${FRONTEND_URL}/subscribe`,
       customer_email: req.user?.email,
     });
 

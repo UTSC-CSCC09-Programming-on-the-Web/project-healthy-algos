@@ -88,7 +88,7 @@ services:
     networks:
       - default
 
-  letsencrypt:
+  nginx-letsencrypt:
     image: nginxproxy/acme-companion
     container_name: nginx-letsencrypt
     restart: always

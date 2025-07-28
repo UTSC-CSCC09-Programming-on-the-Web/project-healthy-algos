@@ -17,9 +17,6 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
   const app = express();
   await initializeDatabase();
 
-  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookRouter);
-  app.use('/api/stripe', ensureAuthenticated, stripeRoutes);
-
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
   const allowedOrigins = [
@@ -28,6 +25,9 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
     'http://localhost:5173',
     FRONTEND_URL,
   ];
+
+  app.set('trust proxy', 1); 
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookRouter);
 
   app.use(cors({
     origin: function (origin, callback) {
@@ -42,8 +42,6 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
 
   app.use(express.json());
 
-  app.set('trust proxy', 1); 
-  
   app.use(session({
     secret: process.env.SESSION_SECRET || 'fallback-dev-secret-change-in-production',
     resave: false,
@@ -58,6 +56,8 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
 
   app.use(passport.initialize());
   app.use(passport.session());
+
+  app.use('/api/stripe', ensureAuthenticated, stripeRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api', protectedRoutes);  
   app.use('/api/game', gameAIRoutes); 
@@ -80,7 +80,7 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
   const PORT = process.env.PORT || 3000;
 
   app.listen(PORT, () => {
-    console.log(`Full-featured backend running on ${FRONTEND_URL} at port ${PORT}`);
+    console.log(`Full-featured backend listening at port ${PORT}`);
     console.log(`Available endpoints:`);
     console.log(`GET  /                               - Health check`);
     console.log(`POST /api/game/ai-decision          - Request AI decision`);
