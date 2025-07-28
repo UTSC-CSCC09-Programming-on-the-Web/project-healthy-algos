@@ -7,10 +7,12 @@ export default function ChatWindow({
   onClose, 
   onSendMessage, 
   messages, 
-  isTyping 
+  isTyping,
+  canvasRef 
 }) {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -25,6 +27,10 @@ export default function ChatWindow({
     if (inputMessage.trim()) {
       onSendMessage(inputMessage.trim());
       setInputMessage('');
+      
+      if (canvasRef && canvasRef.current) {
+        canvasRef.current.focus();
+      }
     }
   };
 
@@ -79,13 +85,18 @@ export default function ChatWindow({
         
         <form className="chat-input-form" onSubmit={handleSubmit}>
           <input
+            ref={inputRef}
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Type your message..."
             className="chat-input"
             disabled={isTyping}
-            autoFocus
+            onBlur={() => {
+              if (canvasRef && canvasRef.current) {
+                setTimeout(() => canvasRef.current.focus(), 10);
+              }
+            }}
           />
           <button 
             type="submit" 

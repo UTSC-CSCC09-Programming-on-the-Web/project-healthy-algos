@@ -9,6 +9,7 @@ import { MovementSystem } from '../systems/MovementSystem';
 import { InputSystem } from '../systems/InputSystem';
 import { CollisionSystem } from '../systems/CollisionSystem';
 import { CameraSystem } from '../systems/CameraSystem';
+import { HelpOverlay } from '../systems/HelpOverlay';
 import { Player } from '../entities/Player';
 import { AIAgent } from '../entities/AIAgent';
 import { aiService } from '../services/aiService';
@@ -22,6 +23,7 @@ export default function WorldPage() {
 
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
+  const chatOpenRef = useRef(false);
   
   // Chat state
   const [chatOpen, setChatOpen] = useState(false);
@@ -60,9 +62,9 @@ export default function WorldPage() {
       aiService.initialize(),
       chatService.initialize()
     ]).then(() => {
-      console.log('🎮 Both AI and Chat services initialized');
+      console.log('Both AI and Chat services initialized');
     }).catch(error => {
-      console.error('❌ Failed to initialize services:', error);
+      console.error('Failed to initialize services:', error);
     });
 
     const k = kaplay({
@@ -74,11 +76,19 @@ export default function WorldPage() {
 
     gameRef.current = k;
 
+    // Make canvas focusable and focused
+    if (canvasRef.current) {
+      canvasRef.current.tabIndex = 0;
+      canvasRef.current.style.outline = 'none'; // Remove focus outline
+      canvasRef.current.focus();
+    }
+
     const assetLoader = new AssetLoader(k);
     const movementSystem = new MovementSystem();
     const inputSystem = new InputSystem(k);
     const collisionSystem = new CollisionSystem();
     const cameraSystem = new CameraSystem(k);
+    const helpOverlay = new HelpOverlay(k);
 
     assetLoader.loadAllAssets();
 
@@ -132,8 +142,31 @@ export default function WorldPage() {
           });
         });
 
+        k.onMousePress(() => {
+          if (canvasRef.current && !chatOpenRef.current) {
+            canvasRef.current.focus();
+          }
+        });
+
         k.onUpdate(() => {
-          const { moveX, moveY } = inputSystem.getMovementInput();
+          // Use ref to get current chat state
+          const { moveX, moveY } = chatOpenRef.current ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput();
+
+          if (!chatOpenRef.current) {
+            const actionKey = inputSystem.getActionKeyPressed();
+            
+            // Help overlay
+            if (actionKey && actionKey.action === "HELP") {
+              helpOverlay.toggle();
+            }
+            
+            if (actionKey && actionKey.action !== "HELP" && !helpOverlay.isHelpVisible()) {
+              const actionMethod = `perform${actionKey.action.charAt(0).toUpperCase() + actionKey.action.slice(1).toLowerCase()}`;
+              if (typeof player[actionMethod] === 'function') {
+                player[actionMethod]();
+              }
+            }
+          }
 
           cameraSystem.setTarget(player.getMainSprite());
           movementSystem.moveCharacter(player, moveX, moveY);
@@ -176,8 +209,7 @@ export default function WorldPage() {
     setCurrentChatAgent(agent);
     setChatMessages([]);
     setChatOpen(true);
-    
-    // Tell the agent it's in chat mode
+    chatOpenRef.current = true; 
     agent.startChat();
     
     // Start chat session with backend
@@ -220,14 +252,29 @@ export default function WorldPage() {
     }
     
     setChatOpen(false);
+    chatOpenRef.current = false; 
     setCurrentChatAgent(null);
     setChatMessages([]);
     setIsTyping(false);
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        canvasRef.current.focus();
+        const keyEvent = new KeyboardEvent('keyup', {
+          bubbles: true,
+          cancelable: true
+        });
+        canvasRef.current.dispatchEvent(keyEvent);
+      }
+    }, 50);
   };
 
   return loading ? <p>Loading...</p> : (
     <div className="map">
       <canvas ref={canvasRef}></canvas>
+      <div className="help-indicator">
+        Press H for Help
+      </div>
       
       <ChatWindow
         isOpen={chatOpen}
@@ -236,6 +283,7 @@ export default function WorldPage() {
         onSendMessage={handleSendMessage}
         messages={chatMessages}
         isTyping={isTyping}
+        canvasRef={canvasRef}
       />
     </div>
   );
