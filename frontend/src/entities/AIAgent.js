@@ -2,6 +2,9 @@ import { BaseCharacter } from './BaseCharacter';
 import { aiService } from '../services/aiService';
 import { DirectionSystem } from '../systems/DirectionSystem';
 
+// Constants
+const IDLE_MOVEMENT = { moveX: 0, moveY: 0 };
+
 export class AIAgent extends BaseCharacter {
   constructor(kaplayContext, agentName, startX = null, startY = null) {
     super(kaplayContext, agentName, startX, startY);
@@ -88,7 +91,7 @@ export class AIAgent extends BaseCharacter {
   update(playerPosition = null, mapBounds = null) {
     // If in chat, stay idle
     if (this.isInChat) {
-      return { moveX: 0, moveY: 0 };
+      return IDLE_MOVEMENT;
     }
 
     // Check if player is nearby for chat indicator
@@ -110,7 +113,7 @@ export class AIAgent extends BaseCharacter {
     }
     
     // Fallback to idle
-    return { moveX: 0, moveY: 0 };
+    return IDLE_MOVEMENT;
   }
 
   // Request AI decision from the AI service
@@ -151,7 +154,7 @@ export class AIAgent extends BaseCharacter {
   executeCurrentAction() {
     if (!this.currentSequence || this.currentActionIndex >= this.currentSequence.length) {
       this.currentSequence = null;
-      return { moveX: 0, moveY: 0 };
+      return IDLE_MOVEMENT;
     }
 
     const currentAction = this.currentSequence[this.currentActionIndex];
@@ -161,7 +164,7 @@ export class AIAgent extends BaseCharacter {
       
       if (this.currentActionIndex >= this.currentSequence.length) {
         this.currentSequence = null;
-        return { moveX: 0, moveY: 0 };
+        return IDLE_MOVEMENT;
       }
       
       const newCurrentAction = this.currentSequence[this.currentActionIndex];
@@ -184,41 +187,20 @@ export class AIAgent extends BaseCharacter {
     if (elapsed >= action.duration) {
       action.completed = true;
       this.currentActionStartTime = currentTime; // Reset for next action
-      return { moveX: 0, moveY: 0 };
+      return IDLE_MOVEMENT;
     }
     
     switch (action.action) {
       case "move": {
-        if (Array.isArray(action.direction)) {
-          const timePerDirection = action.duration / action.direction.length;
-          const currentDirectionIndex = Math.floor(elapsed / timePerDirection);
-          const directionToUse = action.direction[Math.min(currentDirectionIndex, action.direction.length - 1)];
-          return DirectionSystem.getMovementFromDirection(directionToUse);
-        } else {
-          return DirectionSystem.getMovementFromDirection(action.direction);
-        }
+        // Handle direction array - cycle through directions during the action duration
+        const timePerDirection = action.duration / action.direction.length;
+        const currentDirectionIndex = Math.floor(elapsed / timePerDirection);
+        const directionToUse = action.direction[Math.min(currentDirectionIndex, action.direction.length - 1)];
+        return DirectionSystem.getMovementFromDirection(directionToUse);
       }
       
       case "idle": {
-        return { moveX: 0, moveY: 0 };
-      }
-      
-      case "attack":
-      case "axe":
-      case "dig":
-      case "hammering":
-      case "jump":
-      case "mining":
-      case "reeling":
-      case "watering": {
-        if (!action.animationStarted) {
-          const actionMethod = `perform${action.action.charAt(0).toUpperCase() + action.action.slice(1)}`;
-          if (typeof this[actionMethod] === 'function') {
-            this[actionMethod]();
-            action.animationStarted = true;
-          }
-        }
-        return { moveX: 0, moveY: 0 };
+        return IDLE_MOVEMENT;
       }
       
       case "ATTACK":
@@ -236,11 +218,11 @@ export class AIAgent extends BaseCharacter {
             action.animationStarted = true;
           }
         }
-        return { moveX: 0, moveY: 0 };
+        return IDLE_MOVEMENT;
       }
       
       default: {
-        return { moveX: 0, moveY: 0 };
+        return IDLE_MOVEMENT;
       }
     }
   }

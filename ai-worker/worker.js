@@ -26,8 +26,11 @@ console.log("Socket.IO server running on port 3001");
 // In-memory chat sessions (agentId -> session data)
 const chatSessions = new Map();
 
-// Track recent actions for variety
+// Track recent actions for variety (agentId -> recent actions array)
 const recentActions = new Map();
+
+// Valid action animations for AI sequences
+const VALID_ACTION_ANIMATIONS = ["ATTACK", "AXE", "DIG", "HAMMERING", "MINING", "REELING", "WATERING"];
 
 async function generateChatResponse(agentId, userMessage, chatHistory) {
   console.log(`Generating chat response for ${agentId}`);
@@ -199,11 +202,14 @@ STRICT RULES:
 - NO code blocks or explanations
 - Create EXACTLY 6 actions in sequence (mix of movement and actions)
 - Include at least 4 "move" actions
-- Include exactly 2 action animations from: ["ATTACK", "AXE", "DIG", "HAMMERING", "MINING", "REELING", "WATERING"]
+- Include exactly 2 action animations from: ${JSON.stringify(VALID_ACTION_ANIMATIONS)}
 - Choose DIFFERENT action animations each time - vary your selections for interesting gameplay
 - Prefer diverse actions: if you used ATTACK before, try DIG, WATERING, AXE, HAMMERING, or REELING next time
 - action: "move" or any of the action animations above (no "idle" actions)
-- For "move": include "direction" field as array of directions ["north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest"]
+- For "move": include "direction" field as array of directions (ALWAYS use array format, even for single direction)
+- Valid directions: ["north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest"]
+- Single direction example: {"action": "move", "direction": ["north"], "duration": 5}
+- Multiple directions example: {"action": "move", "direction": ["north", "east"], "duration": 6}
 - For action animations: no direction field needed
 - duration: minimum 5 seconds for ALL actions (both movement and action animations)
 - Total sequence should last about 30-40 seconds
@@ -253,7 +259,6 @@ AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: ($
       
       let moveCount = 0;
       let actionCount = 0;
-      const validActionAnimations = ["ATTACK", "AXE", "DIG", "HAMMERING", "MINING", "REELING", "WATERING"];
       
       for (let i = 0; i < decision.sequence.length; i++) {
         const action = decision.sequence[i];
@@ -276,7 +281,7 @@ AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: ($
               throw new Error(`Invalid direction "${dir}" in move action at index ${i}`);
             }
           }
-        } else if (validActionAnimations.includes(action.action)) {
+        } else if (VALID_ACTION_ANIMATIONS.includes(action.action)) {
           actionCount++;
         } else {
           throw new Error(`Invalid action "${action.action}" at index ${i}`);
@@ -296,7 +301,7 @@ AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: ($
       
       // Track the action animations used for variety
       const usedActions = decision.sequence
-        .filter(action => validActionAnimations.includes(action.action))
+        .filter(action => VALID_ACTION_ANIMATIONS.includes(action.action))
         .map(action => action.action);
       
       if (usedActions.length > 0) {
