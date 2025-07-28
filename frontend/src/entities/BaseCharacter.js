@@ -12,7 +12,17 @@ class BaseCharacter {
       y: startY || (SCALED_MAP_HEIGHT / 2)
     };
   }
+  
+  savePreviousPosition() {
+    this.prevPos = { x: this.position.x, y: this.position.y };
+  }
 
+  revertToPreviousPosition() {
+    if (!this.prevPos) return;
+
+    this.setPosition(this.prevPos.x, this.prevPos.y);
+  }
+  
   createSprites(spriteConfig) {
     // spriteConfig { idle: { base: "name", hair: "name" }, walk: { base: "name", hair: "name" } }
     this.spriteConfig = spriteConfig;

@@ -11,8 +11,8 @@ export const GAME_CONFIG = {
   BACKGROUND_COLOR: [135, 206, 235],
 
   // Map settings
-  MAP_WIDTH: 592,
-  MAP_HEIGHT: 432,
+  MAP_WIDTH: 848,
+  MAP_HEIGHT: 688,
   MAP_SCALE: 3,
 
   // Player settings
@@ -26,7 +26,8 @@ export const GAME_CONFIG = {
 
   // Asset paths
   ASSETS: {
-    MAP_BACKGROUND: "/assets/Sunnyside/Maps/map_empty.png",
+    MAP_BACKGROUND: "/assets/Sunnyside/Maps/map_hole.png",
+    MAP_MASK: "/assets/Sunnyside/Maps/map_mask.png",
     WALK_BASE: "/assets/Sunnyside/Characters/Human/WALKING/base_walk_strip8.png",
     IDLE_BASE: "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png",
     IDLE_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png",

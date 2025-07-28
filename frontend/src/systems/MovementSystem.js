@@ -5,7 +5,7 @@ class MovementSystem {
     this.moveSpeed = GAME_CONFIG.MOVE_SPEED;
   }
 
-  moveCharacter(character, moveX, moveY) {
+  moveCharacter(character, moveX, moveY, mapMask) {
     // Update facing direction before movement
     if (moveX !== 0) {
       character.updateFacingDirection(moveX);
@@ -24,11 +24,21 @@ class MovementSystem {
       moveY *= 0.707;
     }
 
-    if (moveX !== 0 || moveY !== 0) {
-      const deltaTime = character.k.dt();
-      const deltaX = moveX * this.moveSpeed * deltaTime;
-      const deltaY = moveY * this.moveSpeed * deltaTime;
-      character.updatePosition(deltaX, deltaY);
+    const deltaTime = character.k.dt();
+    const deltaX = moveX * this.moveSpeed * deltaTime;
+    const deltaY = moveY * this.moveSpeed * deltaTime;
+
+    // Save position before move
+    character.savePreviousPosition();
+
+    // Attempt to move
+    character.updatePosition(deltaX, deltaY);
+
+    // Revert if new position is not walkable
+    const pos = character.getPosition();
+    const collisionYOffset = 16; // adjust based on sprite layout
+    if (!mapMask.isWalkable(pos.x, pos.y + collisionYOffset)) {
+      character.revertToPreviousPosition();
     }
   }
 }

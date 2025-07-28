@@ -6,26 +6,10 @@ class CollisionSystem {
     this.collisionHeight = 10;
   }
 
-  constrainToMapBounds(character) {
+  constrainToMap(character, mapMask) {
     const pos = character.getPosition();
-    let newX = pos.x;
-    let newY = pos.y;
-
-    if (newX - this.collisionWidth < 330) {
-      newX = 330 + this.collisionWidth;
-    }
-    if (newX + this.collisionWidth > SCALED_MAP_WIDTH) {
-      newX = SCALED_MAP_WIDTH - this.collisionWidth;
-    }
-    if (newY - this.collisionHeight < 360) {
-      newY = 360 + this.collisionHeight;
-    }
-    if (newY + this.collisionHeight > SCALED_MAP_HEIGHT) {
-      newY = SCALED_MAP_HEIGHT - this.collisionHeight;
-    }
-
-    if (newX !== pos.x || newY !== pos.y) {
-      character.setPosition(newX, newY);
+    if (!mapMask.isWalkable(pos.x, pos.y)) {
+      character.revertToPreviousPosition();
     }
   }
 
