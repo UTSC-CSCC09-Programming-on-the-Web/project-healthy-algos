@@ -8,7 +8,7 @@ export class AIAgent extends BaseCharacter {
     this.isPlayer = false;
     this.aiState = "idle";
     this.lastDecisionTime = 0;
-    this.decisionInterval = 30000; // Request AI decision every 30 seconds
+    this.decisionInterval = 60000; // Request AI decision every 60 seconds
     this.agentType = this.getAgentTypeByName(agentName);
     
     // AI sequence properties
@@ -16,6 +16,7 @@ export class AIAgent extends BaseCharacter {
     this.currentActionIndex = 0;
     this.currentActionStartTime = 0;
     this.isWaitingForAIDecision = false;
+    this.decisionStartTime = 0; // Track when current decision cycle started
     
     // Chat properties
     this.isInChat = false;
@@ -96,11 +97,6 @@ export class AIAgent extends BaseCharacter {
       this.showChatIndicator = distance <= this.chatHoverDistance;
     }
 
-    if (!this.isPerformingAction && Math.random() < 0.002) { 
-      this.performRandomAction();
-      return { moveX: 0, moveY: 0 };
-    }
-
     if (aiService.isReady() && !this.isWaitingForAIDecision && playerPosition && mapBounds) {
       const currentTime = Date.now();
       
@@ -144,7 +140,7 @@ export class AIAgent extends BaseCharacter {
     }
     
     if (decision && decision.sequence) {
-      console.log(`AI sequence received for ${this.name}:`, decision);
+      console.log(`AI unified sequence received for ${this.name}:`, decision);
       this.currentSequence = decision.sequence;
       this.currentActionIndex = 0;
       this.currentActionStartTime = Date.now();
@@ -175,9 +171,32 @@ export class AIAgent extends BaseCharacter {
     return this.performAction(currentAction);
   }
   performAction(action) {
+    const currentTime = Date.now();
+    
+    // Initialize action start time if not set
+    if (!this.currentActionStartTime) {
+      this.currentActionStartTime = currentTime;
+    }
+    
+    const elapsed = (currentTime - this.currentActionStartTime) / 1000;
+    
+    // Check if action is completed
+    if (elapsed >= action.duration) {
+      action.completed = true;
+      this.currentActionStartTime = currentTime; // Reset for next action
+      return { moveX: 0, moveY: 0 };
+    }
+    
     switch (action.action) {
       case "move": {
-        return DirectionSystem.getMovementFromDirection(action.direction);
+        if (Array.isArray(action.direction)) {
+          const timePerDirection = action.duration / action.direction.length;
+          const currentDirectionIndex = Math.floor(elapsed / timePerDirection);
+          const directionToUse = action.direction[Math.min(currentDirectionIndex, action.direction.length - 1)];
+          return DirectionSystem.getMovementFromDirection(directionToUse);
+        } else {
+          return DirectionSystem.getMovementFromDirection(action.direction);
+        }
       }
       
       case "idle": {
@@ -192,9 +211,30 @@ export class AIAgent extends BaseCharacter {
       case "mining":
       case "reeling":
       case "watering": {
-        const actionMethod = `perform${action.action.charAt(0).toUpperCase() + action.action.slice(1)}`;
-        if (typeof this[actionMethod] === 'function') {
-          this[actionMethod]();
+        if (!action.animationStarted) {
+          const actionMethod = `perform${action.action.charAt(0).toUpperCase() + action.action.slice(1)}`;
+          if (typeof this[actionMethod] === 'function') {
+            this[actionMethod]();
+            action.animationStarted = true;
+          }
+        }
+        return { moveX: 0, moveY: 0 };
+      }
+      
+      case "ATTACK":
+      case "AXE":
+      case "DIG":
+      case "HAMMERING":
+      case "JUMP":
+      case "MINING":
+      case "REELING":
+      case "WATERING": {
+        if (!action.animationStarted) {
+          const actionMethod = `perform${action.action.charAt(0).toUpperCase() + action.action.slice(1).toLowerCase()}`;
+          if (typeof this[actionMethod] === 'function') {
+            this[actionMethod]();
+            action.animationStarted = true;
+          }
         }
         return { moveX: 0, moveY: 0 };
       }
@@ -202,16 +242,6 @@ export class AIAgent extends BaseCharacter {
       default: {
         return { moveX: 0, moveY: 0 };
       }
-    }
-  }
-
-  performRandomAction() {
-    const actions = ['ATTACK', 'JUMP', 'WATERING', 'DIG', 'MINING'];
-    const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    const actionMethod = `perform${randomAction.charAt(0).toUpperCase() + randomAction.slice(1).toLowerCase()}`;
-    if (typeof this[actionMethod] === 'function') {
-      this[actionMethod]();
-      console.log(`${this.name} performing ${randomAction.toLowerCase()}`);
     }
   }
 
@@ -259,52 +289,35 @@ export class AIAgent extends BaseCharacter {
   
   // Action methods
   performAttack() {
-    return this.performAction("attack");
+    return super.performAction("attack");
   }
 
   performAxe() {
-    return this.performAction("axe");
+    return super.performAction("axe");
   }
 
   performDig() {
-    return this.performAction("dig");
+    return super.performAction("dig");
   }
 
   performHammering() {
-    return this.performAction("hammering");
+    return super.performAction("hammering");
   }
 
   performJump() {
-    return this.performAction("jump");
+    return super.performAction("jump");
   }
 
   performMining() {
-    return this.performAction("mining");
+    return super.performAction("mining");
   }
 
   performReeling() {
-    return this.performAction("reeling");
+    return super.performAction("reeling");
   }
 
   performWatering() {
-    return this.performAction("watering");
-  }
-
-  // Generic action performer
-  performRandomAction() {
-    const actions = [
-      () => this.performAttack(),
-      () => this.performAxe(),
-      () => this.performDig(),
-      () => this.performHammering(),
-      () => this.performJump(),
-      () => this.performMining(),
-      () => this.performReeling(),
-      () => this.performWatering()
-    ];
-    
-    const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    return randomAction();
+    return super.performAction("watering");
   }
 
   canInteractWith(player) {
