@@ -27,19 +27,35 @@ class MovementSystem {
     const deltaTime = character.k.dt();
     const deltaX = moveX * this.moveSpeed * deltaTime;
     const deltaY = moveY * this.moveSpeed * deltaTime;
-
-    // Save position before move
-    character.savePreviousPosition();
-
-    // Attempt to move
-    character.updatePosition(deltaX, deltaY);
-
-    // Revert if new position is not walkable
-    const pos = character.getPosition();
     const collisionYOffset = 16; // adjust based on sprite layout
-    if (!mapMask.isWalkable(pos.x, pos.y + collisionYOffset)) {
-      character.revertToPreviousPosition();
+
+    // Try full diagonal movement
+    character.savePreviousPosition();
+    character.updatePosition(deltaX, deltaY);
+    let pos = character.getPosition();
+    if (mapMask.isWalkable(pos.x, pos.y + collisionYOffset)) {
+      return;
     }
+
+    // Revert and try horizontal-only
+    character.revertToPreviousPosition();
+    character.savePreviousPosition();
+    character.updatePosition(deltaX, 0);
+    pos = character.getPosition();
+    if (mapMask.isWalkable(pos.x, pos.y + collisionYOffset)) {
+      return;
+    }
+
+    // Revert and try vertical-only
+    character.revertToPreviousPosition();
+    character.savePreviousPosition();
+    character.updatePosition(0, deltaY);
+    pos = character.getPosition();
+    if (mapMask.isWalkable(pos.x, pos.y + collisionYOffset)) {
+      return;
+    }
+    
+    character.revertToPreviousPosition();
   }
 }
 
