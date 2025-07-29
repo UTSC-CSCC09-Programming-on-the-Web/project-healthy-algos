@@ -18,6 +18,7 @@ import ChatWindow from '../components/ChatWindow';
 import { createTree } from '../systems/CreateWorld';
 import { createHouse } from '../systems/CreateWorld';
 import { createRock } from '../systems/CreateWorld';
+import { createPlant } from '../systems/CreateWorld';
 
 export default function WorldPage() {
   const [loading, setLoading] = useState(true);
@@ -67,9 +68,9 @@ export default function WorldPage() {
           aiService.initialize(),
           chatService.initialize()
         ]);
-        console.log('🎮 Both AI and Chat services initialized');
+        console.log('Both AI and Chat services initialized');
       } catch (error) {
-        console.error('❌ Failed to initialize services:', error);
+        console.error('Failed to initialize services:', error);
       }
 
       const k = kaplay({
@@ -88,7 +89,6 @@ export default function WorldPage() {
       const cameraSystem = new CameraSystem(k);
       const mapMask = new MapMask(GAME_CONFIG.ASSETS.MAP_MASK, GAME_CONFIG.MAP_SCALE);
       await mapMask.load();
-      console.log("🟢 Map mask loaded:", mapMask.canvas.width, "x", mapMask.canvas.height);
 
       assetLoader.loadAllAssets();
 
@@ -108,6 +108,13 @@ export default function WorldPage() {
           rocks.push(createRock(k, 1350, 850, "rock_2"));
           rocks.push(createRock(k, 1400, 900, "rock_3"));
           rocks.push(createRock(k, 1450, 950, "rock_4"));
+
+          const plants = [];
+
+          plants.push(createPlant(k, 1300, 1200, "radish_04"));
+          plants.push(createPlant(k, 1350, 1200, "sunflower_04"));
+          plants.push(createPlant(k, 1400, 1200, "cauliflower_04"));
+          plants.push(createPlant(k, 1450, 1200, "pumpkin_04"));
 
           k.add([
             k.sprite('map_background'),
@@ -174,7 +181,7 @@ export default function WorldPage() {
                 movementSystem.moveCharacter(agent, decision.moveX, decision.moveY, mapMask);
               }
             });
-            
+
             const worldObjects = [...trees, ...houses, ...rocks];
             collisionSystem.resolveCharacterObjectCollision(player, worldObjects);
             aiAgents.forEach(agent => {

@@ -82,3 +82,42 @@ export function createRock(k, x, y, type = "rock_1") {
 
   return rock;
 }
+
+export function createPlant(k, x, y, type = "radish_04") {
+  const scale = GAME_CONFIG.PLAYER_SCALE;
+
+  const soil = k.add([
+    k.sprite("soil_03"),
+    k.pos(x, y),
+    k.anchor("center"),
+    k.scale(scale),
+    k.z(y - 30), // ⬅️ soil below character
+    "plant_soil"
+  ]);
+
+  const plant = k.add([
+    k.sprite(type),
+    k.pos(x, y - 7 * scale), // adjust vertically if needed
+    k.anchor("center"),
+    k.scale(scale),
+    k.z(y - 25), // ⬅️ leaves above character
+    "plant_top"
+  ]);
+
+  if(type === "cauliflower_04") {
+    plant.pos.y += 2 * scale; // Adjust radish position
+  } else if(type === "sunflower_04") {
+    plant.pos.y -= 1 * scale; // Adjust sunflower position
+    plant.pos.x += 0.5 * scale; // Adjust sunflower position
+  } else if(type === "pumpkin_04") {
+    plant.pos.y += 2 * scale; // Adjust pumpkin position
+  }
+
+  return {
+    soil,
+    plant,
+    x,
+    y,
+    type: type,
+  };
+}

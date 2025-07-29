@@ -22,10 +22,17 @@ class AssetLoader {
 
     this.k.loadSprite("house_1", GAME_CONFIG.ASSETS.HOUSE_1);
     this.k.loadSprite("house_2", GAME_CONFIG.ASSETS.HOUSE_2);
+
     this.k.loadSprite("rock_1", GAME_CONFIG.ASSETS.ROCK_1);
     this.k.loadSprite("rock_2", GAME_CONFIG.ASSETS.ROCK_2);
     this.k.loadSprite("rock_3", GAME_CONFIG.ASSETS.ROCK_3);
     this.k.loadSprite("rock_4", GAME_CONFIG.ASSETS.ROCK_4);
+
+    this.k.loadSprite("soil_03", GAME_CONFIG.ASSETS.SOIL_03);
+    this.k.loadSprite("pumpkin_04", GAME_CONFIG.ASSETS.PUMPKIN_04);
+    this.k.loadSprite("radish_04", GAME_CONFIG.ASSETS.RADISH_04);
+    this.k.loadSprite("sunflower_04", GAME_CONFIG.ASSETS.SUNFLOWER_04);
+    this.k.loadSprite("cauliflower_04", GAME_CONFIG.ASSETS.CAULIFLOWER_04);
 
     // Player Assets
     this.k.loadSprite("player_idle_base", GAME_CONFIG.ASSETS.IDLE_BASE, {

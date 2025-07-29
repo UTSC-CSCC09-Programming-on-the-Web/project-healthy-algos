@@ -26,8 +26,8 @@ export const GAME_CONFIG = {
 
   // Asset paths
   ASSETS: {
-    MAP_BACKGROUND: "/assets/Sunnyside/Maps/map_hole.png",
-    MAP_MASK: "/assets/Sunnyside/Maps/map_mask.png",
+    MAP_BACKGROUND: "/assets/Sunnyside/Maps/map_empty2.png",
+    MAP_MASK: "/assets/Sunnyside/Maps/map_empty2_mask.png",
     WALK_BASE: "/assets/Sunnyside/Characters/Human/WALKING/base_walk_strip8.png",
     IDLE_BASE: "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png",
     IDLE_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png",
@@ -48,6 +48,11 @@ export const GAME_CONFIG = {
     ROCK_2: "/assets/Sunnyside/Map_Objects/rock2.png",
     ROCK_3: "/assets/Sunnyside/Map_Objects/rock3.png",
     ROCK_4: "/assets/Sunnyside/Map_Objects/rock4.png",
+    SOIL_03: "/assets/Sunnyside/Elements/Crops/soil_03.png",
+    PUMPKIN_04: "/assets/Sunnyside/Elements/Crops/pumpkin_04.png",
+    RADISH_04: "/assets/Sunnyside/Elements/Crops/radish_04.png",
+    SUNFLOWER_04: "/assets/Sunnyside/Elements/Crops/sunflower_04.png",
+    CAULIFLOWER_04: "/assets/Sunnyside/Elements/Crops/cauliflower_04.png",
   }
 };
 
