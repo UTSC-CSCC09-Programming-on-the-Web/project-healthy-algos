@@ -31,3 +31,25 @@ export function createTree(k, x, y, type = "oak") {
 
   return tree;
 }
+
+export function createHouse(k, x, y) {
+  const house = k.add([
+    k.sprite("house_1"),
+    k.pos(x, y),
+    k.anchor("center"),
+    k.scale(GAME_CONFIG.PLAYER_SCALE),
+    k.z(y),
+    "house"
+  ]);
+
+  const scale = GAME_CONFIG.PLAYER_SCALE;
+  
+  house.collider = {
+    x: x - 17 * scale,
+    y: y + 7 * scale,
+    width: 34 * scale,
+    height: 26 * scale,
+  };
+
+  return house;
+}

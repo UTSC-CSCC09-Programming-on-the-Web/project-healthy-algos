@@ -9,7 +9,7 @@ class AssetLoader {
     //Map Assets
     this.k.loadSprite("map_background", GAME_CONFIG.ASSETS.MAP_BACKGROUND);
     this.k.loadSprite("map_mask", GAME_CONFIG.ASSETS.MAP_MASK);
-    
+
     this.k.loadSprite("oak_tree", GAME_CONFIG.ASSETS.OAK_TREE, {
       sliceX: 4,
       slicey: 1,
@@ -20,6 +20,8 @@ class AssetLoader {
       sliceY: 1,
     });
 
+    this.k.loadSprite("house_1", GAME_CONFIG.ASSETS.HOUSE_1);
+    
     // Player Assets
     this.k.loadSprite("player_idle_base", GAME_CONFIG.ASSETS.IDLE_BASE, {
       sliceX: 9, 
