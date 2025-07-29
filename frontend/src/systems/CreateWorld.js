@@ -32,9 +32,9 @@ export function createTree(k, x, y, type = "oak") {
   return tree;
 }
 
-export function createHouse(k, x, y) {
+export function createHouse(k, x, y, type = "house_1") {
   const house = k.add([
-    k.sprite("house_1"),
+    k.sprite(type), 
     k.pos(x, y),
     k.anchor("center"),
     k.scale(GAME_CONFIG.PLAYER_SCALE),
@@ -43,7 +43,7 @@ export function createHouse(k, x, y) {
   ]);
 
   const scale = GAME_CONFIG.PLAYER_SCALE;
-  
+
   house.collider = {
     x: x - 17 * scale,
     y: y + 7 * scale,
@@ -52,4 +52,33 @@ export function createHouse(k, x, y) {
   };
 
   return house;
+}
+
+export function createRock(k, x, y, type = "rock_1") {
+  const rock = k.add([
+    k.sprite(type),
+    k.pos(x, y),
+    k.anchor("center"),
+    k.scale(GAME_CONFIG.PLAYER_SCALE),
+    k.z(y),
+    "rock"
+  ]);
+
+  const scale = GAME_CONFIG.PLAYER_SCALE;
+  
+  rock.collider = {
+    x: x - 8 * scale,
+    y: y + 4 * scale,
+    width: 16 * scale,
+    height: 8 * scale,
+  };
+
+  if (type === "rock_1" || type === "rock_2") {
+    rock.collider.x = x - 8 * scale;
+    rock.collider.y = y - 2 * scale;
+    rock.collider.width = 16 * scale;
+    rock.collider.height = 8 * scale;
+  }
+
+  return rock;
 }

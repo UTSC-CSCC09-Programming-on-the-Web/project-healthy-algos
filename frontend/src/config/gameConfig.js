@@ -43,6 +43,11 @@ export const GAME_CONFIG = {
     OAK_TREE: "/assets/Sunnyside/Elements/Plants/spr_deco_tree_01_strip4.png",
     PINE_TREE: "/assets/Sunnyside/Elements/Plants/spr_deco_tree_02_strip4.png",
     HOUSE_1: "/assets/Sunnyside/Map_Objects/house1.png",
+    HOUSE_2: "/assets/Sunnyside/Map_Objects/house2.png",
+    ROCK_1: "/assets/Sunnyside/Map_Objects/rock1.png",
+    ROCK_2: "/assets/Sunnyside/Map_Objects/rock2.png",
+    ROCK_3: "/assets/Sunnyside/Map_Objects/rock3.png",
+    ROCK_4: "/assets/Sunnyside/Map_Objects/rock4.png",
   }
 };
 

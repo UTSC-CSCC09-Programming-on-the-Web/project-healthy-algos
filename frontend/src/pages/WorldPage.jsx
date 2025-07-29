@@ -17,6 +17,7 @@ import { chatService } from '../services/chatService';
 import ChatWindow from '../components/ChatWindow';
 import { createTree } from '../systems/CreateWorld';
 import { createHouse } from '../systems/CreateWorld';
+import { createRock } from '../systems/CreateWorld';
 
 export default function WorldPage() {
   const [loading, setLoading] = useState(true);
@@ -99,7 +100,14 @@ export default function WorldPage() {
           trees.push(createTree(k, 1000, 800, "pine"));
 
           const houses = [];
-          houses.push(createHouse(k, 1400, 1000));
+          houses.push(createHouse(k, 1400, 1000, "house_1")); 
+          houses.push(createHouse(k, 1500, 1100, "house_2")); 
+
+          const rocks = [];
+          rocks.push(createRock(k, 1300, 800, "rock_1"));
+          rocks.push(createRock(k, 1350, 850, "rock_2"));
+          rocks.push(createRock(k, 1400, 900, "rock_3"));
+          rocks.push(createRock(k, 1450, 950, "rock_4"));
 
           k.add([
             k.sprite('map_background'),
@@ -166,7 +174,8 @@ export default function WorldPage() {
                 movementSystem.moveCharacter(agent, decision.moveX, decision.moveY, mapMask);
               }
             });
-            const worldObjects = [...trees, ...houses];
+            
+            const worldObjects = [...trees, ...houses, ...rocks];
             collisionSystem.resolveCharacterObjectCollision(player, worldObjects);
             aiAgents.forEach(agent => {
               collisionSystem.resolveCharacterObjectCollision(agent, worldObjects);
