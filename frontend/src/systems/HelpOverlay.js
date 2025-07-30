@@ -43,7 +43,7 @@ export class HelpOverlay {
         this.k.opacity(0.9),
         this.k.pos(x, y),
         this.k.fixed(),
-        this.k.z(200),
+        this.k.z(2000),
         "helpOverlay"
       ])
     );
@@ -56,7 +56,7 @@ export class HelpOverlay {
         this.k.opacity(0.8),
         this.k.pos(x - 2, y - 2),
         this.k.fixed(),
-        this.k.z(199),
+        this.k.z(1990),
         "helpOverlay"
       ])
     );
@@ -72,7 +72,7 @@ export class HelpOverlay {
         this.k.pos(x + overlayWidth/2, y + 20),
         this.k.anchor("center"),
         this.k.fixed(),
-        this.k.z(201),
+        this.k.z(2010),
         "helpOverlay"
       ])
     );
@@ -93,7 +93,7 @@ export class HelpOverlay {
           this.k.color(text === "MOVEMENT:" || text === "ACTIONS:" ? [255, 255, 0] : [255, 255, 255]),
           this.k.pos(x + 20, y + 60 + (index * 20)),
           this.k.fixed(),
-          this.k.z(201),
+          this.k.z(2010),
           "helpOverlay"
         ])
       );
@@ -112,7 +112,7 @@ export class HelpOverlay {
           this.k.color(255, 255, 255),
           this.k.pos(x + 20, y + yOffset + (index * 20)),
           this.k.fixed(),
-          this.k.z(201),
+          this.k.z(2010),
           "helpOverlay"
         ])
       );
@@ -129,7 +129,7 @@ export class HelpOverlay {
         this.k.pos(x + overlayWidth/2, y + overlayHeight - 30),
         this.k.anchor("center"),
         this.k.fixed(),
-        this.k.z(201),
+        this.k.z(2010),
         "helpOverlay"
       ])
     );
