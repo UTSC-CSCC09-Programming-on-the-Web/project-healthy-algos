@@ -141,13 +141,6 @@ export default function WorldPage() {
             aiAgents.push(agent);
           });
 
-          // Test pathfinding system with first agent after a short delay
-          setTimeout(() => {
-            if (aiAgents.length > 0) {
-              aiAgents[0].testPathfinding();
-            }
-          }, 2000);
-
         // Handle clicks on AI agents for chat
         k.onClick(() => {
           const screenMousePos = k.mousePos();

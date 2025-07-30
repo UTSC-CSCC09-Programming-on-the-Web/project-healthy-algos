@@ -126,6 +126,14 @@ export class AIAgent extends BaseCharacter {
       return this.executeCurrentAction();
     }
 
+    if (this.userActionInProgress && !this.currentSequence) {
+      this.userActionInProgress = false;
+      this.userActionData = null;
+      this.userActionStartTime = 0;
+      this.isPerformingAction = false;
+      this.lastDecisionTime = Date.now() - this.decisionInterval;
+    }
+
     // Only request AI decisions if no sequence is in progress
     if (aiService.isReady() && !this.isWaitingForAIDecision && !this.userActionInProgress && playerPosition && mapBounds) {
       const currentTime = Date.now();
@@ -167,12 +175,10 @@ export class AIAgent extends BaseCharacter {
     
     // Don't override user actions
     if (this.userActionInProgress) {
-      console.log(`Ignoring AI decision for ${this.name} - user action in progress`);
       return;
     }
     
     if (decision && decision.sequence) {
-      console.log(`AI unified sequence received for ${this.name}:`, decision);
       this.currentSequence = decision.sequence;
       this.currentActionIndex = 0;
       this.currentActionStartTime = Date.now();
@@ -210,8 +216,8 @@ export class AIAgent extends BaseCharacter {
         this.userActionData = null;
         this.userActionStartTime = 0;
         this.isPerformingAction = false;
-        // Reset AI decision timer
-        this.lastDecisionTime = 0;
+        // Force immediate AI decision request after user action completes
+        this.lastDecisionTime = Date.now() - this.decisionInterval;
       }
       
       this.currentSequence = null;
@@ -319,7 +325,6 @@ export class AIAgent extends BaseCharacter {
   }
 
   startChat() {
-    console.log(`${this.name} entering chat mode`);
     this.isInChat = true;
     this.aiState = "chatting";
     // Stop any current movement
@@ -329,7 +334,6 @@ export class AIAgent extends BaseCharacter {
   }
 
   endChat() {
-    console.log(`${this.name} leaving chat mode`);
     this.isInChat = false;
     this.aiState = "idle";
     this.lastDecisionTime = 0;
@@ -362,11 +366,6 @@ export class AIAgent extends BaseCharacter {
   }
 
   performReeling() {
-    // Test pathfinding system
-    const currentPos = this.getPosition();
-    const result = pathfindingSystem.findNearestObjectCoordinates('tree', currentPos);
-    console.log(`${this.name} pathfinding result:`, result);
-    
     return super.performAction("reeling");
   }
 
