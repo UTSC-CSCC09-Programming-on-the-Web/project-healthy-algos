@@ -27,7 +27,7 @@ export const GAME_CONFIG = {
   // Asset paths
   ASSETS: {
     MAP_BACKGROUND: "/assets/Sunnyside/Maps/map_empty2.png",
-    MAP_MASK: "/assets/Sunnyside/Maps/map_empty2_mask.png",
+    MAP_MASK: "/assets/Sunnyside/Maps/map_empty4_mask_shrunk.png",
     WALK_BASE: "/assets/Sunnyside/Characters/Human/WALKING/base_walk_strip8.png",
     IDLE_BASE: "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png",
     IDLE_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png",

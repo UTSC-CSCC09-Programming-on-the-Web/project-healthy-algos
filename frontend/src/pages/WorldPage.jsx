@@ -15,10 +15,8 @@ import { AIAgent } from '../entities/AIAgent';
 import { aiService } from '../services/aiService';
 import { chatService } from '../services/chatService';
 import ChatWindow from '../components/ChatWindow';
-import { createTree } from '../systems/CreateWorld';
-import { createHouse } from '../systems/CreateWorld';
-import { createRock } from '../systems/CreateWorld';
-import { createPlant } from '../systems/CreateWorld';
+import { createTree, createHouse, createPlant, createRock } from '../systems/ObjectGenerator';
+import { generateWorldObjects } from '../systems/WorldGenerator';
 
 export default function WorldPage() {
   const [loading, setLoading] = useState(true);
@@ -94,27 +92,8 @@ export default function WorldPage() {
 
       k.onLoad(() => {
         k.scene('main', () => {
-          const trees = [];
-          //Tree generation
-          trees.push(createTree(k, 1200, 900, "oak"));
-          trees.push(createTree(k, 1000, 800, "pine"));
 
-          const houses = [];
-          houses.push(createHouse(k, 1400, 1000, "house_1")); 
-          houses.push(createHouse(k, 1500, 1100, "house_2")); 
-
-          const rocks = [];
-          rocks.push(createRock(k, 1300, 800, "rock_1"));
-          rocks.push(createRock(k, 1350, 850, "rock_2"));
-          rocks.push(createRock(k, 1400, 900, "rock_3"));
-          rocks.push(createRock(k, 1450, 950, "rock_4"));
-
-          const plants = [];
-
-          plants.push(createPlant(k, 1300, 1200, "radish_04"));
-          plants.push(createPlant(k, 1350, 1200, "sunflower_04"));
-          plants.push(createPlant(k, 1400, 1200, "cauliflower_04"));
-          plants.push(createPlant(k, 1450, 1200, "pumpkin_04"));
+          const { trees, rocks, houses, plants } = generateWorldObjects(k, mapMask);
 
           k.add([
             k.sprite('map_background'),
@@ -130,12 +109,13 @@ export default function WorldPage() {
           const aiAgents = [];
           const agentNames = ['Agent_A', 'Agent_B', 'Agent_C', 'Agent_D'];
 
-          const playerStartX = player.position.x;
-          const playerStartY = player.position.y;
+          const playerStartX = 1000;
+          const playerStartY = 1000;
+          player.setPosition(playerStartX, playerStartY);
 
           agentNames.forEach((name, index) => {
             const angle = (index / agentNames.length) * 2 * Math.PI;
-            const distance = 120 + Math.random() * 100;
+            const distance = 120
             const startX = playerStartX + Math.cos(angle) * distance;
             const startY = playerStartY + Math.sin(angle) * distance;
 
@@ -182,13 +162,13 @@ export default function WorldPage() {
               }
             });
 
-            const worldObjects = [...trees, ...houses, ...rocks];
-            collisionSystem.resolveCharacterObjectCollision(player, worldObjects);
+            const collidables = [...trees, ...rocks, ...houses];
+            collisionSystem.resolveCharacterObjectCollision(player, collidables);
             aiAgents.forEach(agent => {
-              collisionSystem.resolveCharacterObjectCollision(agent, worldObjects);
+              collisionSystem.resolveCharacterObjectCollision(agent, collidables);
             });
 
-            worldObjects.forEach(e => e.z = e.pos.y);
+            [...collidables].forEach(e => e.z = e.pos.y);
           });
         });
 
