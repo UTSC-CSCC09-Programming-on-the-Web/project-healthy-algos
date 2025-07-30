@@ -3,12 +3,14 @@
 ## Members
 - Donghyun (Eric) Kweon | eric.kweon@mail.utoronto.ca | kweondo1
 - Samuel Mantilla | samuel.mantilla@mail.utoronto.ca | mantil11
-- Arick Liu | arick.liu@mail.utoronto.ca | liuarick
+
+## Deployed URL
+- [i-sim.app](https://i-sim.app/)
 
 ## Description
 A sandbox-style simulation with 4 autonomous AI agents and a player that co-exist and interact in real-time on a 2D plane. 
 Bots behave realistically with respect to unique personalities and perform actions at intervals, controlled by a language model. 
-Players wilkl be able to talk to, and influence the bots using communication mechanisms.
+Players will be able to talk to, and influence the bots using communication mechanisms.
 
 ## Frontend Framework
 - ReactJs + react router
@@ -23,7 +25,7 @@ Players wilkl be able to talk to, and influence the bots using communication mec
 - Beta: implement basic task queue and AI powered agents (polling task queue in intervals of 30 seconds) with a LLM API and communication mechanism
 - Final: increase AI action choices and increase dynamic player interaction + deployment
 
-## Starting the backend
+## Starting the application
 1. `cd backend`
 2. `npm install`
 3. `npm run start:dev` or `nodemon app.js`
