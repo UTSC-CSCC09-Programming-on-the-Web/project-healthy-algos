@@ -27,9 +27,29 @@ export class AIAgent extends BaseCharacter {
     this.clickableDistance = 30;
     this.showChatIndicator = false;
     
+    // User action properties
+    this.userActionInProgress = false;
+    this.userActionData = null;
+    this.userActionStartTime = 0;
+    
+    // Subscribe to AI decisions with retry logic
+    this.setupAIServiceSubscriptions();
+    
+    // Retry subscription setup if aiService isn't ready
+    if (!aiService.isReady()) {
+      setTimeout(() => this.setupAIServiceSubscriptions(), 1000);
+    }
+  }
+
+  setupAIServiceSubscriptions() {
     // Subscribe to AI decisions
-    aiService.subscribeToAIDecisions(agentName, (decision, error) => {
+    aiService.subscribeToAIDecisions(this.name, (decision, error) => {
       this.handleAIDecision(decision, error);
+    });
+    
+    // Subscribe to user action requests
+    aiService.subscribeToUserActionRequests(this.name, (actionData) => {
+      this.handleUserActionRequest(actionData);
     });
   }
 
@@ -100,16 +120,18 @@ export class AIAgent extends BaseCharacter {
       this.showChatIndicator = distance <= this.chatHoverDistance;
     }
 
-    if (aiService.isReady() && !this.isWaitingForAIDecision && playerPosition && mapBounds) {
+    // Execute current sequence (could be AI or user action)
+    if (this.currentSequence) {
+      return this.executeCurrentAction();
+    }
+
+    // Only request AI decisions if no sequence is in progress
+    if (aiService.isReady() && !this.isWaitingForAIDecision && !this.userActionInProgress && playerPosition && mapBounds) {
       const currentTime = Date.now();
       
       if (currentTime - this.lastDecisionTime >= this.decisionInterval) {
         this.requestAIDecision(playerPosition, mapBounds);
       }
-    }
-    
-    if (this.currentSequence) {
-      return this.executeCurrentAction();
     }
     
     // Fallback to idle
@@ -142,6 +164,12 @@ export class AIAgent extends BaseCharacter {
       return;
     }
     
+    // Don't override user actions
+    if (this.userActionInProgress) {
+      console.log(`Ignoring AI decision for ${this.name} - user action in progress`);
+      return;
+    }
+    
     if (decision && decision.sequence) {
       console.log(`AI unified sequence received for ${this.name}:`, decision);
       this.currentSequence = decision.sequence;
@@ -150,9 +178,41 @@ export class AIAgent extends BaseCharacter {
     }
   }
 
+  handleUserActionRequest(actionData) {
+    // Create a new action sequence from the user request
+    const userActionSequence = [{
+      action: actionData.action,
+      duration: actionData.duration || 15000, // Default 15 seconds like the AI worker sends
+      animationStarted: false,
+      completed: false
+    }];
+
+    // Set user action flags
+    this.userActionInProgress = true;
+    this.userActionData = actionData;
+    this.userActionStartTime = Date.now();
+    
+    // Replace current sequence immediately with user action
+    this.currentSequence = userActionSequence;
+    this.currentActionIndex = 0;
+    this.currentActionStartTime = 0; // Reset to start the new action timing
+    
+    // Stop waiting for AI decisions during user action
+    this.isWaitingForAIDecision = false;
+  }
+
   // Execute the current action in the sequence
   executeCurrentAction() {
     if (!this.currentSequence || this.currentActionIndex >= this.currentSequence.length) {
+      if (this.userActionInProgress) {
+        this.userActionInProgress = false;
+        this.userActionData = null;
+        this.userActionStartTime = 0;
+        this.isPerformingAction = false;
+        // Reset AI decision timer
+        this.lastDecisionTime = 0;
+      }
+      
       this.currentSequence = null;
       return IDLE_MOVEMENT;
     }
@@ -182,11 +242,12 @@ export class AIAgent extends BaseCharacter {
     }
     
     const elapsed = (currentTime - this.currentActionStartTime) / 1000;
+    const durationInSeconds = action.duration > 1000 ? action.duration / 1000 : action.duration;
     
     // Check if action is completed
-    if (elapsed >= action.duration) {
+    if (elapsed >= durationInSeconds) {
       action.completed = true;
-      this.currentActionStartTime = currentTime; 
+      this.currentActionStartTime = 0; // Reset for next action
       
       if (this.isPerformingAction) {
         this.isPerformingAction = false;
@@ -198,20 +259,28 @@ export class AIAgent extends BaseCharacter {
     switch (action.action) {
       case "move": {
         // Handle direction array - cycle through directions during the action duration
-        const timePerDirection = action.duration / action.direction.length;
+        const timePerDirection = durationInSeconds / action.direction.length;
         const currentDirectionIndex = Math.floor(elapsed / timePerDirection);
         const directionToUse = action.direction[Math.min(currentDirectionIndex, action.direction.length - 1)];
         return DirectionSystem.getMovementFromDirection(directionToUse);
       }
       
       case "ATTACK":
+      case "attack":
       case "AXE":
+      case "axe":
       case "DIG":
+      case "dig":
       case "HAMMERING":
+      case "hammering":
       case "JUMP":
+      case "jump":
       case "MINING":
+      case "mining":
       case "REELING":
-      case "WATERING": {
+      case "reeling":
+      case "WATERING":
+      case "watering": {
         if (!action.animationStarted) {
           const actionMethod = `perform${action.action.charAt(0).toUpperCase() + action.action.slice(1).toLowerCase()}`;
           if (typeof this[actionMethod] === 'function') {

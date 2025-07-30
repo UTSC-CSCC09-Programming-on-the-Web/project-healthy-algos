@@ -4,6 +4,7 @@ class AIService {
   constructor() {
     this.socket = null;
     this.aiDecisionCallbacks = new Map();
+    this.userActionCallbacks = new Map();
     this.isConnected = false;
     this.gameState = null;
   }
@@ -25,7 +26,6 @@ class AIService {
         });
 
         this.socket.on('connect', () => {
-          console.log('Connected to AI Worker WebSocket');
           this.isConnected = true;
           resolve();
         });
@@ -49,6 +49,13 @@ class AIService {
           if (callback) {
             callback(null, data.error);
           }
+        });
+
+        this.socket.on('user.action.request', (data) => {
+          const callback = this.userActionCallbacks.get(data.agentId);
+          if (callback) {
+            callback(data);
+          } 
         });
 
         this.socket.on('connect_error', (error) => {
@@ -75,6 +82,14 @@ class AIService {
 
   unsubscribeFromAIDecisions(aiAgentId) {
     this.aiDecisionCallbacks.delete(aiAgentId);
+  }
+
+  subscribeToUserActionRequests(agentId, callback) {
+    this.userActionCallbacks.set(agentId, callback);
+  }
+
+  unsubscribeFromUserActionRequests(agentId) {
+    this.userActionCallbacks.delete(agentId);
   }
 
   updateGameState(gameState) {
@@ -127,6 +142,7 @@ class AIService {
       this.socket = null;
     }
     this.aiDecisionCallbacks.clear();
+    this.userActionCallbacks.clear();
     this.isConnected = false;
   }
 
