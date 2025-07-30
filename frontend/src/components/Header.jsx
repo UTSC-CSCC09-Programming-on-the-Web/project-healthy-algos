@@ -37,7 +37,13 @@ export default function Header({ user, setUser }) {
       <div className="header-right">
         {user ? (
           <>
-            <span className="header-username">{user.name}</span>
+            <span
+              className="header-username"
+              onClick={() => navigate('/membership')}
+              style={{ cursor: 'pointer' }}
+            >
+              {user.name}
+            </span>
             <button onClick={handleLogout} className="header-button">
               Logout
             </button>

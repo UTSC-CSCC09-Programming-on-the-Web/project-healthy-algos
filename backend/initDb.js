@@ -13,12 +13,18 @@ export async function initializeDatabase() {
         email TEXT,
         picture TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        subscribed BOOLEAN DEFAULT FALSE
+        subscribed BOOLEAN DEFAULT FALSE,
+        stripe_subscription_id TEXT
       );
     `;
 
     await pool.query(createUsersTableQuery);
     console.log('Users table checked/created');
+
+    await pool.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
+    `);
   } catch (err) {
     console.error('Failed to initialize database:', err);
   }

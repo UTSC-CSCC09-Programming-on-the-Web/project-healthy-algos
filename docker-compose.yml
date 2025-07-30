@@ -1,3 +1,4 @@
+# Docker for VM
 version: '3.9'
 
 services:
@@ -111,3 +112,73 @@ volumes:
   nginx-vhost:
   nginx-html:
   acme:
+
+# Docker for Local development
+# version: '3.9'
+
+# services:
+#   db:
+#     image: postgres:15
+#     restart: always
+#     environment:
+#       POSTGRES_DB: isim
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: postgres
+#     volumes:
+#       - pgdata:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+
+#   backend:
+#     build: ./backend
+#     volumes:
+#       - ./backend:/app
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       - DATABASE_URL=postgresql://postgres:postgres@db:5432/isim
+#       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+#       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+#       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+#       - STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
+#       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+#     depends_on:
+#       - db
+#     env_file:
+#     - ./backend/.env
+
+#   frontend:
+#     build: ./frontend
+#     container_name: frontend
+#     depends_on:
+#       - backend
+#     ports:
+#       - "5173:5173"
+#     environment:
+#       VITE_BACKEND_URL: http://localhost:3000
+#       VITE_AI_WORKER_URL: http://localhost:3001
+#       # VITE_BACKEND_URL: http://147.182.155.17:3000
+#       # VITE_AI_WORKER_URL: http://147.182.155.17:3001
+#     command: npm run dev
+#     env_file:
+#     - ./frontend/.env
+
+#   redis:
+#     image: redis:7
+#     restart: always
+#     ports:
+#       - "6379:6379"
+#   ai-worker:
+#     build: ./ai-worker
+#     container_name: ai-worker
+#     depends_on:
+#       - backend
+#       - redis
+#     ports:
+#       - "3001:3001"
+#     env_file:
+#       - ./ai-worker/.env
+#     command: node worker.js
+
+# volumes:
+#   pgdata:

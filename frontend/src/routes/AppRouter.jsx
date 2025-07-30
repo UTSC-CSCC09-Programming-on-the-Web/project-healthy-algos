@@ -8,6 +8,7 @@ import SubscriptionPage from '../pages/SubscriptionPage';
 import SuccessPage from '../pages/SuccessPage';
 import MapView from '../pages/MapView'
 import Credits from '../pages/Credits'
+import MembershipPage from '../pages/MembershipPage';
 
 function RequireAuth({ user, children }) {
   if (!user) {
@@ -28,6 +29,15 @@ function RequireUnsubscribed({ user, children }) {
     return <Navigate to="/login" replace />;
   } else if (user.subscribed) {
     return <Navigate to="/world" replace />;
+  }
+  return children;
+}
+
+function RequireSubscribed({ user, children }) {
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  } else if (!user.subscribed) {
+    return <Navigate to="/subscribe" replace />;
   }
   return children;
 }
@@ -55,6 +65,14 @@ export default function AppRouter({ user, setUser }) {
             <RequireUnsubscribed user={user}>
               <SubscriptionPage />
             </RequireUnsubscribed>
+          }
+        />
+        <Route
+          path="/membership"
+          element={
+            <RequireSubscribed user={user}>
+              <MembershipPage user={user} />
+            </RequireSubscribed>
           }
         />
         <Route

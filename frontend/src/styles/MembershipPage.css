@@ -1,0 +1,68 @@
+.membership-page {
+  min-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-size: cover;
+  background-position: center;
+}
+
+.membership-container {
+  border-radius: 16px;
+  padding: 2rem 3rem;
+  text-align: center;
+  max-width: 600px;
+  width: 90%;
+  /* background-color: rgba(255, 255, 255, 0.9); */
+  /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); */
+}
+
+.membership-heading {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-shadow: none;
+  color: white;
+}
+
+.membership-description {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.membership-status {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  color: #2e7d32; /* green if active */
+}
+
+.membership-expiration {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.cancel-button {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background-color: #ff5252;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease;
+}
+
+.cancel-button:hover {
+  background-color: #e53935;
+}
+
+.membership-logo {
+  width: 60%;
+  max-width: 400px;
+  margin-bottom: 2rem;
+}

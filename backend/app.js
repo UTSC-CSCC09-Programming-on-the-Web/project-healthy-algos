@@ -10,7 +10,7 @@ import { stripeRoutes, stripeWebhookRouter } from './routes/stripeRoutes.js';
 import gameAIRoutes from './routes/gameAIRoutes.js';
 import { initializeDatabase } from './initDb.js';
 import { createDatabaseIfNotExists } from './createDatabase.js';
-import { ensureAuthenticated } from './middleware/authMiddleware.js';
+import { ensureAuthenticated, refreshUser } from './middleware/authMiddleware.js';
 
 (async () => {
   await createDatabaseIfNotExists();
@@ -56,6 +56,7 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
 
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(refreshUser);
 
   app.use('/api/stripe', ensureAuthenticated, stripeRoutes);
   app.use('/api/auth', authRoutes);
