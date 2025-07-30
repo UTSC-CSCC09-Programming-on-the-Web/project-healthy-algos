@@ -112,9 +112,7 @@ export default function MapView() {
               Math.pow(worldMousePos.x - agentPos.x, 2) + 
               Math.pow(worldMousePos.y - agentPos.y, 2)
             );
-            
-            // If clicked close to agent and player is nearby
-            if (clickDistance <= 100 && agent.isClickableForChat(playerPos)) {
+            if (clickDistance <= 30) {
               startChatWithAgent(agent);
             }
           });

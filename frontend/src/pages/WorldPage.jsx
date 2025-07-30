@@ -135,8 +135,8 @@ export default function WorldPage() {
               Math.pow(worldMousePos.y - agentPos.y, 2)
             );
             
-            // If clicked close to agent and player is nearby
-            if (clickDistance <= 200 && agent.isClickableForChat(playerPos)) {
+            // If clicked close to agent (can chat from any distance)
+            if (clickDistance <= 30) {
               startChatWithAgent(agent);
             }
           });

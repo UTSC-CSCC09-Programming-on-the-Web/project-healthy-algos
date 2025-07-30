@@ -24,7 +24,7 @@ export class AIAgent extends BaseCharacter {
     // Chat properties
     this.isInChat = false;
     this.chatHoverDistance = 60;
-    this.clickableDistance = 200;
+    this.clickableDistance = 30;
     this.showChatIndicator = false;
     
     // Subscribe to AI decisions
@@ -173,10 +173,10 @@ export class AIAgent extends BaseCharacter {
     
     return this.performAction(currentAction);
   }
+
   performAction(action) {
     const currentTime = Date.now();
-    
-    // Initialize action start time if not set
+
     if (!this.currentActionStartTime) {
       this.currentActionStartTime = currentTime;
     }
@@ -186,7 +186,12 @@ export class AIAgent extends BaseCharacter {
     // Check if action is completed
     if (elapsed >= action.duration) {
       action.completed = true;
-      this.currentActionStartTime = currentTime; // Reset for next action
+      this.currentActionStartTime = currentTime; 
+      
+      if (this.isPerformingAction) {
+        this.isPerformingAction = false;
+      }
+      
       return IDLE_MOVEMENT;
     }
     
@@ -197,10 +202,6 @@ export class AIAgent extends BaseCharacter {
         const currentDirectionIndex = Math.floor(elapsed / timePerDirection);
         const directionToUse = action.direction[Math.min(currentDirectionIndex, action.direction.length - 1)];
         return DirectionSystem.getMovementFromDirection(directionToUse);
-      }
-      
-      case "idle": {
-        return IDLE_MOVEMENT;
       }
       
       case "ATTACK":
@@ -245,10 +246,6 @@ export class AIAgent extends BaseCharacter {
     const dx = playerPosition.x - myPos.x;
     const dy = playerPosition.y - myPos.y;
     return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  isClickableForChat(playerPosition) {
-    return this.getDistanceToPlayer(playerPosition) <= this.clickableDistance;
   }
 
   startChat() {
