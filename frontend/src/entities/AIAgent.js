@@ -124,6 +124,14 @@ export class AIAgent extends BaseCharacter {
     if (this.currentSequence) {
       return this.executeCurrentAction();
     }
+    
+    if (this.userActionInProgress && !this.currentSequence) {
+      this.userActionInProgress = false;
+      this.userActionData = null;
+      this.userActionStartTime = 0;
+      this.isPerformingAction = false;
+      this.lastDecisionTime = Date.now() - this.decisionInterval;
+    }
 
     // Only request AI decisions if no sequence is in progress
     if (aiService.isReady() && !this.isWaitingForAIDecision && !this.userActionInProgress && playerPosition && mapBounds) {
@@ -175,6 +183,9 @@ export class AIAgent extends BaseCharacter {
       this.currentSequence = decision.sequence;
       this.currentActionIndex = 0;
       this.currentActionStartTime = Date.now();
+
+      // Force immediate AI decision request after user action completes
+      this.lastDecisionTime = Date.now() - this.decisionInterval;
     }
   }
 
