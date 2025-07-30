@@ -24,7 +24,7 @@ export class AIAgent extends BaseCharacter {
     // Chat properties
     this.isInChat = false;
     this.chatHoverDistance = 60;
-    this.clickableDistance = 200;
+    this.clickableDistance = 30;
     this.showChatIndicator = false;
     
     // Subscribe to AI decisions
@@ -173,7 +173,7 @@ export class AIAgent extends BaseCharacter {
     
     return this.performAction(currentAction);
   }
-  
+
   performAction(action) {
     const currentTime = Date.now();
 
@@ -246,10 +246,6 @@ export class AIAgent extends BaseCharacter {
     const dx = playerPosition.x - myPos.x;
     const dy = playerPosition.y - myPos.y;
     return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  isClickableForChat(playerPosition) {
-    return this.getDistanceToPlayer(playerPosition) <= this.clickableDistance;
   }
 
   startChat() {
