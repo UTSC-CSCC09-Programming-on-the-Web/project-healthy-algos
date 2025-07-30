@@ -1,8 +1,9 @@
 import '../styles/SubscriptionPage.css';
 
 export default function SubscriptionPage() {
+  const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
   const handleSubscribe = async () => {
-    const res = await fetch('http://localhost:3000/api/stripe/create-checkout-session', {
+    const res = await fetch(`${API_BASE}/api/stripe/create-checkout-session`, {
       method: 'POST',
       credentials: 'include',
     });

@@ -5,7 +5,7 @@ class MovementSystem {
     this.moveSpeed = GAME_CONFIG.MOVE_SPEED;
   }
 
-  moveCharacter(character, moveX, moveY) {
+  moveCharacter(character, moveX, moveY, mapMask) {
     // Update facing direction before movement
     if (moveX !== 0) {
       character.updateFacingDirection(moveX);
@@ -29,12 +29,38 @@ class MovementSystem {
       moveY *= 0.707;
     }
 
-    if (moveX !== 0 || moveY !== 0) {
-      const deltaTime = character.k.dt();
-      const deltaX = moveX * this.moveSpeed * deltaTime;
-      const deltaY = moveY * this.moveSpeed * deltaTime;
-      character.updatePosition(deltaX, deltaY);
+    const deltaTime = character.k.dt();
+    const deltaX = moveX * this.moveSpeed * deltaTime;
+    const deltaY = moveY * this.moveSpeed * deltaTime;
+    const collisionYOffset = 16; // adjust based on sprite layout
+
+    // Try full diagonal movement
+    character.savePreviousPosition();
+    character.updatePosition(deltaX, deltaY);
+    let pos = character.getPosition();
+    if (mapMask.isWalkable(pos.x, pos.y + collisionYOffset)) {
+      return;
     }
+
+    // Revert and try horizontal-only
+    character.revertToPreviousPosition();
+    character.savePreviousPosition();
+    character.updatePosition(deltaX, 0);
+    pos = character.getPosition();
+    if (mapMask.isWalkable(pos.x, pos.y + collisionYOffset)) {
+      return;
+    }
+
+    // Revert and try vertical-only
+    character.revertToPreviousPosition();
+    character.savePreviousPosition();
+    character.updatePosition(0, deltaY);
+    pos = character.getPosition();
+    if (mapMask.isWalkable(pos.x, pos.y + collisionYOffset)) {
+      return;
+    }
+    
+    character.revertToPreviousPosition();
   }
 }
 

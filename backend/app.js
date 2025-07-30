@@ -19,8 +19,10 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
 
   app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
   app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: FRONTEND_URL,
     credentials: true
   }));
 
@@ -62,7 +64,7 @@ import { ensureAuthenticated } from './middleware/authMiddleware.js';
   const PORT = process.env.PORT || 3000;
 
   app.listen(PORT, () => {
-    console.log(`Full-featured backend running on http://localhost:${PORT}`);
+    console.log(`Full-featured backend running on ${FRONTEND_URL} at port ${PORT}`);
     console.log(`Available endpoints:`);
     console.log(`GET  /                               - Health check`);
     console.log(`POST /api/game/ai-decision          - Request AI decision`);

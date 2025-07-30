@@ -6,7 +6,7 @@ const router = Router();
 // Init Redis Queue
 const gameAIQueue = new Queue("GameAI", {
   connection: {
-    host: process.env.REDIS_HOST || "localhost",
+    host: process.env.REDIS_HOST || "redis",
     port: process.env.REDIS_PORT || 6379,
   }
 });

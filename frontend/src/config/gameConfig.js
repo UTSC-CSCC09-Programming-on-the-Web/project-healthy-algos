@@ -45,9 +45,9 @@ export const GAME_CONFIG = {
 
   // Asset paths
   ASSETS: {
-    MAP_BACKGROUND: "/assets/Sunnyside/Maps/map_empty.png",
-    
-    // IDLE animations
+    MAP_BACKGROUND: "/assets/Sunnyside/Maps/map_empty2.png",
+    MAP_MASK: "/assets/Sunnyside/Maps/map_empty4_mask_shrunk.png",
+    WALK_BASE: "/assets/Sunnyside/Characters/Human/WALKING/base_walk_strip8.png",
     IDLE_BASE: "/assets/Sunnyside/Characters/Human/IDLE/base_idle_strip9.png",
     IDLE_SHORT_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/shorthair_idle_strip9.png",
     IDLE_SPIKY_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/spikeyhair_idle_strip9.png",
@@ -134,7 +134,21 @@ export const GAME_CONFIG = {
     TOOL_HAMMERING: "assets/Sunnyside/Characters/Human/HAMMERING/tools_hamering_strip23.png",
     TOOL_MINING: "assets/Sunnyside/Characters/Human/MINING/tools_mining_strip10.png",
     TOOL_REELING: "assets/Sunnyside/Characters/Human/REELING/tools_reeling_strip13.png",
-    TOOL_WATERING: "assets/Sunnyside/Characters/Human/WATERING/tools_watering_strip5.png"
+    TOOL_WATERING: "assets/Sunnyside/Characters/Human/WATERING/tools_watering_strip5.png",
+    IDLE_MOP_HAIR: "/assets/Sunnyside/Characters/Human/IDLE/mophair_idle_strip9.png",
+    OAK_TREE: "/assets/Sunnyside/Elements/Plants/spr_deco_tree_01_strip4.png",
+    PINE_TREE: "/assets/Sunnyside/Elements/Plants/spr_deco_tree_02_strip4.png",
+    HOUSE_1: "/assets/Sunnyside/Map_Objects/house1.png",
+    HOUSE_2: "/assets/Sunnyside/Map_Objects/house2.png",
+    ROCK_1: "/assets/Sunnyside/Map_Objects/rock1.png",
+    ROCK_2: "/assets/Sunnyside/Map_Objects/rock2.png",
+    ROCK_3: "/assets/Sunnyside/Map_Objects/rock3.png",
+    ROCK_4: "/assets/Sunnyside/Map_Objects/rock4.png",
+    SOIL_03: "/assets/Sunnyside/Elements/Crops/soil_03.png",
+    PUMPKIN_04: "/assets/Sunnyside/Elements/Crops/pumpkin_04.png",
+    RADISH_04: "/assets/Sunnyside/Elements/Crops/radish_04.png",
+    SUNFLOWER_04: "/assets/Sunnyside/Elements/Crops/sunflower_04.png",
+    CAULIFLOWER_04: "/assets/Sunnyside/Elements/Crops/cauliflower_04.png",
   }
 };
 

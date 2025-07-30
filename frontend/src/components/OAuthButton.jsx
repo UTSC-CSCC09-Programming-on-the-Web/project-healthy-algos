@@ -1,8 +1,9 @@
 import '../styles/OAuthButton.css';
 
 export default function OAuthButton() {
+  const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
   const handleLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/google';
+    window.location.href = `${API_BASE}/api/auth/google`;
   };
 
   return (

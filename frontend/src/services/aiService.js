@@ -16,7 +16,8 @@ class AIService {
 
     return new Promise((resolve, reject) => {
       try {
-        this.socket = io('http://localhost:3001', {
+        const socketUrl = import.meta.env.VITE_AI_WORKER_URL || 'http://localhost:3001';
+        this.socket = io(socketUrl, {
           transports: ['websocket'],
           reconnection: true,
           reconnectionAttempts: 5,
@@ -93,7 +94,9 @@ class AIService {
         }
       };
     
-      const response = await fetch('http://localhost:3000/api/game/ai-decision', {
+      const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+      const response = await fetch(`${API_BASE}/api/game/ai-decision`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
