@@ -52,7 +52,7 @@ function directionToCenter(position, mapBounds) {
   const dx = centerX - position.x;
   const dy = centerY - position.y;
   
-  // Primary direction (strongest component)
+  // Primary direction
   let primaryDirection = '';
   if (Math.abs(dx) > Math.abs(dy)) {
     primaryDirection = dx > 0 ? 'east' : 'west';
@@ -60,9 +60,9 @@ function directionToCenter(position, mapBounds) {
     primaryDirection = dy > 0 ? 'south' : 'north';
   }
   
-  // Secondary direction (weaker component)
+  // Secondary direction
   let secondaryDirection = '';
-  if (Math.abs(dx) > 10 && Math.abs(dy) > 10) { // Only add diagonal if both components are significant
+  if (Math.abs(dx) > 10 && Math.abs(dy) > 10) {
     if (Math.abs(dx) > Math.abs(dy)) {
       secondaryDirection = dy > 0 ? 'south' : 'north';
     } else {
@@ -127,11 +127,21 @@ async function generateChatResponse(agentId, userMessage, chatHistory) {
     
     const prompt = `${systemPrompt}
 
+IMPORTANT: Check if the human is requesting you to perform a specific action. Valid actions you can perform are: ${JSON.stringify(VALID_ACTION_ANIMATIONS)}.
+
+If the human is requesting an action:
+- Respond with JSON: {"action": "ACTION_NAME", "valid": true, "message": "your personality-based response confirming you'll do it"}
+- If they request an invalid action, respond with: {"action": "INVALID", "valid": false, "message": "I can only do these actions: ATTACK, AXE, DIG, HAMMERING, JUMP, MINING, REELING, WATERING. What would you like me to try?"}
+
+If NO action is requested (just normal conversation):
+- Respond with JSON: {"action": null, "message": "your normal conversational response"}
+
 RULES:
-- Keep responses under 80 words
+- Always respond with valid JSON in the format above
+- Keep message under 80 words
 - Be conversational and stay true to your personality
 - Don't mention you're an AI
-- Ask questions to keep conversation going
+- For normal chat, ask questions to keep conversation going
 - Respond naturally to whatever topic comes up
 
 ${contextText}Human: ${userMessage}
@@ -153,17 +163,37 @@ ${agentId}:`;
     
     console.log(`Gemini response for ${agentId}: "${responseText}"`);
     
+    // Parse JSON response to check for action requests
+    let parsedResponse;
+    try {
+      const cleanedResponse = cleanJsonResponse(responseText);
+      parsedResponse = JSON.parse(cleanedResponse);
+      
+      // Validate response structure
+      if (!parsedResponse.message) {
+        throw new Error("Missing message field");
+      }
+      
+    } catch (parseError) {
+      console.warn(`Failed to parse chat JSON for ${agentId}, treating as normal text:`, parseError.message);
+      // Fallback to treat as normal text response
+      parsedResponse = {
+        action: null,
+        message: responseText
+      };
+    }
+    
     // Store conversation in session
     session.messages.push(
       { sender: 'player', content: userMessage, timestamp: Date.now() },
-      { sender: 'ai', content: responseText, timestamp: Date.now() }
+      { sender: 'ai', content: parsedResponse.message, timestamp: Date.now() }
     );
 
     if (session.messages.length > 16) {
       session.messages = session.messages.slice(-16);
     }
 
-    return responseText;
+    return parsedResponse;
 
   } catch (error) {
     console.error('Chat OpenAI API error:', error);
@@ -172,12 +202,13 @@ ${agentId}:`;
     // Fallback responses
     const fallbacks = [
       "Sorry, I didn't quite catch that. What were you saying?",
-      "That's interesting! Tell me more about what you're thinking.",
       "I'm having a bit of trouble finding the right words. What would you like to chat about?",
-      "Hmm, that's a good point! What's your take on it?"
     ];
     
-    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    return {
+      action: null,
+      message: fallbacks[Math.floor(Math.random() * fallbacks.length)]
+    };
   }
 }
 
@@ -186,12 +217,35 @@ async function onChatResponseRequested(jobData) {
     const { agentId, message, chatHistory, socketId } = jobData;
     const response = await generateChatResponse(agentId, message, chatHistory);
     
-    // Send response back to specific client
+    // Send chat response back to client
     io.to(socketId).emit("chat.response", {
       agentId,
-      message: response,
+      message: response.message,
       timestamp: Date.now()
     });
+    
+    // Check if user requested a valid action
+    if (response.action && response.action !== null && response.valid !== false) {
+      if (VALID_ACTION_ANIMATIONS.includes(response.action)) {
+        console.log(`User requested valid action: ${response.action} for ${agentId}`);
+        
+        // Emit to all client so that it can be handled by the action handler
+        io.emit("user.action.request", {
+          agentId,
+          action: response.action,
+          duration: 15000,
+          timestamp: Date.now()
+        });
+        
+        io.to(socketId).emit("chat.action.suggested", {
+          agentId,
+          action: response.action,
+          timestamp: Date.now()
+        });
+      } else {
+        console.log(`User requested invalid action: ${response.action} for ${agentId}`);
+      }
+    }
     
     return { success: true, response };
     
