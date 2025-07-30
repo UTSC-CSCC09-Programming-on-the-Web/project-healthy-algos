@@ -1,6 +1,7 @@
 import { BaseCharacter } from './BaseCharacter';
 import { aiService } from '../services/aiService';
 import { DirectionSystem } from '../systems/DirectionSystem';
+import { pathfindingSystem } from '../systems/PathfindingSystem';
 
 // Constants
 const IDLE_MOVEMENT = { moveX: 0, moveY: 0 };
@@ -361,6 +362,11 @@ export class AIAgent extends BaseCharacter {
   }
 
   performReeling() {
+    // Test pathfinding system
+    const currentPos = this.getPosition();
+    const result = pathfindingSystem.findNearestObjectCoordinates('tree', currentPos);
+    console.log(`${this.name} pathfinding result:`, result);
+    
     return super.performAction("reeling");
   }
 

@@ -18,6 +18,7 @@ import { chatService } from '../services/chatService';
 import ChatWindow from '../components/ChatWindow';
 import { createTree, createHouse, createPlant, createRock } from '../systems/ObjectGenerator';
 import { generateWorldObjects } from '../systems/WorldGenerator';
+import { pathfindingSystem } from '../systems/PathfindingSystem';
 
 export default function WorldPage() {
   const [loading, setLoading] = useState(true);
@@ -104,6 +105,12 @@ export default function WorldPage() {
         k.scene('main', () => {
 
           const { trees, rocks, houses, plants } = generateWorldObjects(k, mapMask);
+          
+          // Initialize pathfinding system with world objects
+          pathfindingSystem.setWorldObjects({ trees, rocks, houses, plants });
+          
+          // Make pathfinding system available globally for testing
+          window.pathfindingSystem = pathfindingSystem;
 
           k.add([
             k.sprite('map_background'),
@@ -133,6 +140,13 @@ export default function WorldPage() {
             agent.createSprites();
             aiAgents.push(agent);
           });
+
+          // Test pathfinding system with first agent after a short delay
+          setTimeout(() => {
+            if (aiAgents.length > 0) {
+              aiAgents[0].testPathfinding();
+            }
+          }, 2000);
 
         // Handle clicks on AI agents for chat
         k.onClick(() => {
