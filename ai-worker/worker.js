@@ -29,6 +29,62 @@ console.log("Socket.IO server running on port 3001");
 // In-memory chat sessions (agentId -> session data)
 const chatSessions = new Map();
 
+// Track recent actions for variety (agentId -> recent actions array)
+const recentActions = new Map();
+
+// Valid action animations for AI sequences
+const VALID_ACTION_ANIMATIONS = ["ATTACK", "AXE", "DIG", "HAMMERING", "JUMP", "MINING", "REELING", "WATERING"];
+
+// Helper function to calculate distance from a position to center
+function distanceToCenter(position, mapBounds) {
+  const centerX = mapBounds.width / 2;
+  const centerY = mapBounds.height / 2;
+  return Math.sqrt(
+    Math.pow(position.x - centerX, 2) + 
+    Math.pow(position.y - centerY, 2)
+  );
+}
+
+// Helper function to get the general direction toward center
+function directionToCenter(position, mapBounds) {
+  const centerX = mapBounds.width / 2;
+  const centerY = mapBounds.height / 2;
+  const dx = centerX - position.x;
+  const dy = centerY - position.y;
+  
+  // Primary direction (strongest component)
+  let primaryDirection = '';
+  if (Math.abs(dx) > Math.abs(dy)) {
+    primaryDirection = dx > 0 ? 'east' : 'west';
+  } else {
+    primaryDirection = dy > 0 ? 'south' : 'north';
+  }
+  
+  // Secondary direction (weaker component)
+  let secondaryDirection = '';
+  if (Math.abs(dx) > 10 && Math.abs(dy) > 10) { // Only add diagonal if both components are significant
+    if (Math.abs(dx) > Math.abs(dy)) {
+      secondaryDirection = dy > 0 ? 'south' : 'north';
+    } else {
+      secondaryDirection = dx > 0 ? 'east' : 'west';
+    }
+  }
+  
+  return { primary: primaryDirection, secondary: secondaryDirection };
+}
+
+// Helper function to get directions that move toward center
+function getDirectionsTowardCenter(position, mapBounds) {
+  const directions = directionToCenter(position, mapBounds);
+  const result = [directions.primary];
+  if (directions.secondary) {
+    result.push(directions.secondary);
+    // Also add the diagonal combination
+    result.push(`${directions.primary}${directions.secondary}`);
+  }
+  return result;
+}
+
 async function generateChatResponse(agentId, userMessage, chatHistory) {
   console.log(`Generating chat response for ${agentId}`);
   let session = chatSessions.get(agentId);
@@ -162,52 +218,73 @@ function cleanJsonResponse(text) {
 }
 
 async function makeAIDecision(gameContext) {
-  const centerX = gameContext.mapBounds.width / 2;
-  const centerY = gameContext.mapBounds.height / 2;
-  const distanceFromCenter = Math.sqrt(
-    Math.pow(gameContext.aiPosition.x - centerX, 2) + 
-    Math.pow(gameContext.aiPosition.y - centerY, 2)
-  );
+  const distanceFromCenter = distanceToCenter(gameContext.aiPosition, gameContext.mapBounds);
   const maxDistance = Math.min(gameContext.mapBounds.width, gameContext.mapBounds.height) * 0.15;
   
+  // Get recent actions for this agent to encourage variety
+  const agentId = gameContext.aiAgentId || 'unknown';
+  const agentRecentActions = recentActions.get(agentId) || [];
+  const recentActionsText = agentRecentActions.length > 0 
+    ? `Recent actions used: [${agentRecentActions.join(', ')}]. Try to use DIFFERENT actions for variety!` 
+    : 'No recent actions tracked. Feel free to use any actions.';
+  
+  // Get center-focused guidance
+  const directionsToCenter = getDirectionsTowardCenter(gameContext.aiPosition, gameContext.mapBounds);
+  const centerX = gameContext.mapBounds.width / 2;
+  const centerY = gameContext.mapBounds.height / 2;
+  const centerGuidance = distanceFromCenter > maxDistance 
+    ? `URGENT: TOO FAR FROM CENTER! Prioritize these directions toward center: [${directionsToCenter.join(', ')}]`
+    : distanceFromCenter > maxDistance * 0.6
+    ? `CAUTION: Getting far from center. Prefer these directions: [${directionsToCenter.join(', ')}]`
+    : `Good position. You can explore but consider occasional movement toward: [${directionsToCenter.join(', ')}]`;
+  
   try {
-    const prompt = `You are a game AI that creates action sequences. Respond ONLY with valid JSON - no markdown, no code blocks, no explanations.
+    const prompt = `You are a game AI that creates action sequences with both movement and actions. Respond ONLY with valid JSON - no markdown, no code blocks, no explanations.
 
 Format:
 {
   "sequence": [
-    {"action": "move", "direction": "north", "duration": 3},
-    {"action": "move", "direction": "east", "duration": 2},
-    {"action": "move", "direction": "south", "duration": 3},
-    {"action": "move", "direction": "west", "duration": 2},
-    {"action": "move", "direction": "northeast", "duration": 3},
-    {"action": "move", "direction": "northwest", "duration": 2},
-    {"action": "move", "direction": "southeast", "duration": 3},
-    {"action": "idle", "duration": 2}
+    {"action": "move", "direction": ["north", "east"], "duration": 5},
+    {"action": "move", "direction": ["west", "south"], "duration": 6},
+    {"action": "DIG", "duration": 8},
+    {"action": "move", "direction": ["south", "east", "north"], "duration": 7},
+    {"action": "WATERING", "duration": 10},
+    {"action": "move", "direction": ["west"], "duration": 5}
   ],
-  "reasoning": "exploring area while staying near center"
+  "reasoning": "exploring area while staying near center, digging during exploration and watering plants for variety"
 }
 
 STRICT RULES:
 - Respond with ONLY the JSON object above
-- NO markdown formatting like \`\`\`json
-- NO code blocks or explanations
-- Create EXACTLY 8 actions in sequence
-- At least 6 actions must be "move" actions
-- At most 2 actions can be "idle" 
-- action: "move" or "idle" 
-- direction: "north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest" (only for move actions)
-- duration: 2-4 seconds for each action
-- Total sequence should last about 25-30 seconds
-- Critical: Always prioritize staying near map center
-- If more than 15% away from center, most actions must move toward center
-- If near center, can explore but prefer inward directions
-- Avoid long sequences in same outward direction
-- Mix movement and occasional idle for natural behavior
+- No markdown formatting like \`\`\`json
+- No code blocks or explanations
+- Create EXACTLY 6 actions in sequence (mix of movement and actions)
+- Include exactly 2 "move" actions
+- Include exactly 4 action animations from: ${JSON.stringify(VALID_ACTION_ANIMATIONS)}
+- Choose DIFFERENT action animations each time - vary your selections for interesting gameplay
+- Prefer diverse actions: if you used ATTACK before, try DIG, WATERING, AXE, HAMMERING, JUMP, or REELING next time
+- action: "move" or any of the action animations above
+- For "move": include "direction" field as array of directions (ALWAYS use array format, even for single direction)
+- Valid directions: ["north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest"]
+- Single direction example: {"action": "move", "direction": ["north"], "duration": 5}
+- Multiple directions example: {"action": "move", "direction": ["north", "east"], "duration": 5}
+- For action animations: no direction field needed
+- duration: minimum 5 seconds for ALL actions, maximum 5 seconds for "move" actions
+- Total sequence should last about 50-55 seconds
+- Movement can have 1-4 directions in sequence (agent will move in each direction for equal time)
+- Weave action animations naturally into the movement sequence
+- VARIETY IS KEY: Mix up your action choices - don't repeat the same animations frequently
+- Critical: Always prioritize staying near map center (${centerX}, ${centerY})
+- When far from center, prioritize directions that move toward center
+- Avoid long sequences moving away from center
 
 Respond with JSON only, no other text.
 
-AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: (${centerX}, ${centerY}). Distance from center: ${Math.round(distanceFromCenter)}. Max recommended distance: ${Math.round(maxDistance)}. ${distanceFromCenter > maxDistance ? 'URGENT: TOO FAR FROM CENTER - prioritize moving toward center immediately!' : distanceFromCenter > maxDistance * 0.5 ? 'CAUTION: Getting far from center - bias toward center' : 'Good position - can explore but prefer inward directions'}. Player at (${gameContext.playerPosition.x}, ${gameContext.playerPosition.y}). Create action sequence that keeps AI near center.`;
+${recentActionsText}
+
+${centerGuidance}
+
+AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: (${centerX}, ${centerY}). Distance from center: ${Math.round(distanceFromCenter)}. Max recommended distance: ${Math.round(maxDistance)}. Player at (${gameContext.playerPosition.x}, ${gameContext.playerPosition.y}). Create action sequence that keeps AI near center.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -234,68 +311,95 @@ AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: ($
       if (!decision.sequence || !Array.isArray(decision.sequence)) {
         throw new Error("Invalid sequence format - missing sequence array");
       }
-      if (decision.sequence.length !== 8) {
-        throw new Error(`Invalid sequence length - expected 8 actions, got ${decision.sequence.length}`);
+      if (decision.sequence.length !== 6) {
+        throw new Error(`Invalid sequence length - expected 6 actions, got ${decision.sequence.length}`);
       }
+      
       let moveCount = 0;
-      let idleCount = 0;
+      let actionCount = 0;
       
       for (let i = 0; i < decision.sequence.length; i++) {
         const action = decision.sequence[i];
         if (!action.action || !action.duration) {
           throw new Error(`Invalid action format at index ${i} - missing action or duration`);
         }
+        
         if (action.action === "move") {
           moveCount++;
-          if (!action.direction) {
-            throw new Error(`Move action at index ${i} missing direction`);
+          if (!action.direction || !Array.isArray(action.direction) || action.direction.length === 0) {
+            throw new Error(`Move action at index ${i} missing direction array or empty array`);
           }
-        } else if (action.action === "idle") {
-          idleCount++;
+          if (action.direction.length > 4) {
+            throw new Error(`Move action at index ${i} has too many directions (max 4), got ${action.direction.length}`);
+          }
+          if (action.duration > 5) {
+            throw new Error(`Move action at index ${i} duration cannot exceed 5 seconds, got ${action.duration}`);
+          }
+          // Validate each direction in the array
+          const validDirections = ["north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest"];
+          for (const dir of action.direction) {
+            if (!validDirections.includes(dir)) {
+              throw new Error(`Invalid direction "${dir}" in move action at index ${i}`);
+            }
+          }
+        } else if (VALID_ACTION_ANIMATIONS.includes(action.action)) {
+          actionCount++;
+        } else {
+          throw new Error(`Invalid action "${action.action}" at index ${i}`);
+        }
+        
+        if (action.duration < 5) {
+          throw new Error(`Action "${action.action}" at index ${i} must have minimum 5 seconds duration, got ${action.duration}`);
         }
       }
       
-      if (moveCount < 6) {
-        throw new Error(`Not enough move actions - expected at least 6, got ${moveCount}`);
+      if (moveCount !== 2) {
+        throw new Error(`Invalid move count - expected exactly 2 move actions, got ${moveCount}`);
       }
-      if (idleCount > 2) {
-        throw new Error(`Too many idle actions - expected at most 2, got ${idleCount}`);
+      if (actionCount !== 4) {
+        throw new Error(`Invalid action count - expected exactly 4 action animations, got ${actionCount}`);
       }
+      
+      // Track the action animations used for variety
+      const usedActions = decision.sequence
+        .filter(action => VALID_ACTION_ANIMATIONS.includes(action.action))
+        .map(action => action.action);
+      
+      if (usedActions.length > 0) {
+        const currentRecentActions = recentActions.get(agentId) || [];
+        const updatedRecentActions = [...currentRecentActions, ...usedActions].slice(-6); // Keep last 6 actions
+        recentActions.set(agentId, updatedRecentActions);
+      }
+      
       return decision;
       
     } catch (parseError) {
-      console.warn("Failed to parse AI response, using idle fallback:", parseError.message);
-      
+      console.warn("Failed to parse AI response, using fallback:", parseError.message);
       return {
         sequence: [
-          { action: "idle", duration: 4 },
-          { action: "idle", duration: 4 },
-          { action: "idle", duration: 4 },
-          { action: "idle", duration: 4 },
-          { action: "idle", duration: 4 },
-          { action: "idle", duration: 4 },
-          { action: "idle", duration: 4 },
-          { action: "idle", duration: 4 }
+          { action: "JUMP", duration: 10 },
+          { action: "DIG", duration: 10 },
+          { action: "JUMP", duration: 10 },
+          { action: "WATERING", duration: 10 },
+          { action: "JUMP", duration: 10 },
+          { action: "MINING", duration: 10 }
         ],
-        reasoning: "API parse error fallback - idle behavior"
+        reasoning: "API parse error fallback - diverse actions for easy error detection"
       };
     }
     
   } catch (error) {
     console.error('AI decision error:', error.message);
-    
     return {
       sequence: [
-        { action: "idle", duration: 4 },
-        { action: "idle", duration: 4 },
-        { action: "idle", duration: 4 },
-        { action: "idle", duration: 4 },
-        { action: "idle", duration: 4 },
-        { action: "idle", duration: 4 },
-        { action: "idle", duration: 4 },
-        { action: "idle", duration: 4 }
+        { action: "JUMP", duration: 10 },
+        { action: "DIG", duration: 10 },
+        { action: "JUMP", duration: 10 },
+        { action: "WATERING", duration: 10 },
+        { action: "JUMP", duration: 10 },
+        { action: "MINING", duration: 10 }
       ],
-      reasoning: "API error fallback - idle behavior"
+      reasoning: "API error fallback - diverse actions for easy error detection"
     };
   }
 }
@@ -303,7 +407,8 @@ AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: ($
 async function onAIDecisionRequested(jobData) {
 try {
     await new Promise(resolve => setTimeout(resolve, 1000));
-    const decision = await makeAIDecision(jobData.gameState);
+    const gameStateWithAgentId = { ...jobData.gameState, aiAgentId: jobData.aiAgentId };
+    const decision = await makeAIDecision(gameStateWithAgentId);
     io.emit("ai.decision", {
       aiAgentId: jobData.aiAgentId,
       decision: decision,

@@ -4,8 +4,8 @@ class ChatService {
   constructor() {
     this.socket = null;
     this.isConnected = false;
-    this.chatSessions = new Map(); // agentId -> chat session
-    this.messageCallbacks = new Map(); // agentId -> callback function
+    this.chatSessions = new Map(); 
+    this.messageCallbacks = new Map(); 
   }
 
   // Initialize WebSocket connection (reuse same socket as aiService)
@@ -25,19 +25,19 @@ class ChatService {
         });
 
         this.socket.on('connect', () => {
-          console.log('🗨️ Connected to Chat Service');
+          console.log('Connected to Chat Service');
           this.isConnected = true;
           resolve();
         });
 
         this.socket.on('disconnect', () => {
-          console.log('🗨️ Disconnected from Chat Service');
+          console.log('Disconnected from Chat Service');
           this.isConnected = false;
         });
 
         // Listen for AI chat responses
         this.socket.on('chat.response', (data) => {
-          console.log('💬 Chat response received:', data);
+          console.log('Chat response received:', data);
           const { agentId, message, timestamp } = data;
           const callback = this.messageCallbacks.get(agentId);
           if (callback) {
@@ -50,7 +50,7 @@ class ChatService {
         });
 
         this.socket.on('chat.error', (data) => {
-          console.error('💬 Chat error:', data);
+          console.error('Chat error:', data);
           const callback = this.messageCallbacks.get(data.agentId);
           if (callback) {
             callback({
@@ -66,7 +66,6 @@ class ChatService {
           reject(error);
         });
 
-        // Timeout connection attempt
         setTimeout(() => {
           if (!this.isConnected) {
             reject(new Error('Chat service connection timeout'));
@@ -84,8 +83,7 @@ class ChatService {
       console.warn('Chat service not connected');
       return false;
     }
-
-    // Store the callback for this agent
+    // Store callback
     this.messageCallbacks.set(agentId, onMessage);
 
     // Initialize local chat session
@@ -103,7 +101,7 @@ class ChatService {
       timestamp: Date.now()
     });
 
-    console.log(`🗨️ Started chat session with ${agentName} (${agentId})`);
+    console.log(`Started chat session with ${agentName} (${agentId})`);
     return true;
   }
 
@@ -132,14 +130,13 @@ class ChatService {
       timestamp: Date.now()
     });
 
-    console.log(`💬 Sent message to ${agentId}: ${message}`);
+    console.log(`Sent message to ${agentId}: ${message}`);
     return true;
   }
 
   endChatSession(agentId) {
     if (!this.chatSessions.has(agentId)) return;
-
-    console.log(`🗨️ Ending chat session with ${agentId}`);
+    console.log(`Ending chat session with ${agentId}`);
 
     // Clean up local session
     this.chatSessions.delete(agentId);
@@ -167,7 +164,7 @@ class ChatService {
     const session = this.chatSessions.get(agentId);
     if (session) {
       session.messages.push(message);
-      // Keep only last 20 messages to prevent memory bloat
+      // Keep only last 20 messages
       if (session.messages.length > 20) {
         session.messages = session.messages.slice(-20);
       }
@@ -186,7 +183,6 @@ class ChatService {
     this.messageCallbacks.clear();
   }
 
-  // Check if service is ready
   isReady() {
     return this.isConnected && this.socket;
   }

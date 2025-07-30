@@ -13,9 +13,14 @@ class MovementSystem {
 
     // Handle animation state based on movement
     if (moveX !== 0 || moveY !== 0) {
+      // Cancel stationary actions when movement starts
+      character.cancelActionIfMoving();
       character.switchToWalk();
     } else {
-      character.switchToIdle();
+      // Only switch to idle if not performing an action
+      if (!character.isPlayingAction()) {
+        character.switchToIdle();
+      }
     }
 
     // Normalize diagonal movement to maintain consistent speed

@@ -10,6 +10,7 @@ import { InputSystem } from '../systems/InputSystem';
 import { CollisionSystem } from '../systems/CollisionSystem';
 import { MapMask } from '../systems/MapMask';
 import { CameraSystem } from '../systems/CameraSystem';
+import { HelpOverlay } from '../systems/HelpOverlay';
 import { Player } from '../entities/Player';
 import { AIAgent } from '../entities/AIAgent';
 import { aiService } from '../services/aiService';
@@ -25,6 +26,7 @@ export default function WorldPage() {
 
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
+  const chatOpenRef = useRef(false);
   
   // Chat state
   const [chatOpen, setChatOpen] = useState(false);
@@ -78,7 +80,14 @@ export default function WorldPage() {
         background: GAME_CONFIG.BACKGROUND_COLOR,
       });
 
-      gameRef.current = k;
+    gameRef.current = k;
+
+    // Make canvas focusable and focused
+    if (canvasRef.current) {
+      canvasRef.current.tabIndex = 0;
+      canvasRef.current.style.outline = 'none'; // Remove focus outline
+      canvasRef.current.focus();
+    }
 
       const assetLoader = new AssetLoader(k);
       const movementSystem = new MovementSystem();
@@ -87,6 +96,7 @@ export default function WorldPage() {
       const cameraSystem = new CameraSystem(k);
       const mapMask = new MapMask(GAME_CONFIG.ASSETS.MAP_MASK, GAME_CONFIG.MAP_SCALE);
       await mapMask.load();
+      const helpOverlay = new HelpOverlay(k);
 
       assetLoader.loadAllAssets();
 
@@ -124,26 +134,52 @@ export default function WorldPage() {
             aiAgents.push(agent);
           });
 
-          k.onClick(() => {
-            const screenMousePos = k.mousePos();
-            const worldMousePos = k.toWorld(screenMousePos);
-            const playerPos = player.getPosition();
-
-            aiAgents.forEach((agent) => {
-              const agentPos = agent.getPosition();
-              const clickDistance = Math.hypot(
-                worldMousePos.x - agentPos.x,
-                worldMousePos.y - agentPos.y
-              );
-
-              if (clickDistance <= 200 && agent.isClickableForChat(playerPos)) {
-                startChatWithAgent(agent);
-              }
-            });
+        // Handle clicks on AI agents for chat
+        k.onClick(() => {
+          const screenMousePos = k.mousePos();
+          const worldMousePos = k.toWorld(screenMousePos);
+          const playerPos = player.getPosition();
+          
+          // Check if clicked on any AI agent
+          aiAgents.forEach((agent, index) => {
+            const agentPos = agent.getPosition();
+            const clickDistance = Math.sqrt(
+              Math.pow(worldMousePos.x - agentPos.x, 2) + 
+              Math.pow(worldMousePos.y - agentPos.y, 2)
+            );
+            
+            // If clicked close to agent (can chat from any distance)
+            if (clickDistance <= 30) {
+              startChatWithAgent(agent);
+            }
           });
+        });
 
-          k.onUpdate(() => {
-            const { moveX, moveY } = inputSystem.getMovementInput();
+        k.onMousePress(() => {
+          if (canvasRef.current && !chatOpenRef.current) {
+            canvasRef.current.focus();
+          }
+        });
+
+        k.onUpdate(() => {
+          // Use ref to get current chat state
+          const { moveX, moveY } = chatOpenRef.current ? { moveX: 0, moveY: 0 } : inputSystem.getMovementInput();
+
+          if (!chatOpenRef.current) {
+            const actionKey = inputSystem.getActionKeyPressed();
+            
+            // Help overlay
+            if (actionKey && actionKey.action === "HELP") {
+              helpOverlay.toggle();
+            }
+            
+            if (actionKey && actionKey.action !== "HELP" && !helpOverlay.isHelpVisible()) {
+              const actionMethod = `perform${actionKey.action.charAt(0).toUpperCase() + actionKey.action.slice(1).toLowerCase()}`;
+              if (typeof player[actionMethod] === 'function') {
+                player[actionMethod]();
+              }
+            }
+          }
 
             cameraSystem.setTarget(player.getMainSprite());
             movementSystem.moveCharacter(player, moveX, moveY, mapMask);
@@ -194,8 +230,7 @@ export default function WorldPage() {
     setCurrentChatAgent(agent);
     setChatMessages([]);
     setChatOpen(true);
-    
-    // Tell the agent it's in chat mode
+    chatOpenRef.current = true; 
     agent.startChat();
     
     // Start chat session with backend
@@ -238,14 +273,29 @@ export default function WorldPage() {
     }
     
     setChatOpen(false);
+    chatOpenRef.current = false; 
     setCurrentChatAgent(null);
     setChatMessages([]);
     setIsTyping(false);
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        canvasRef.current.focus();
+        const keyEvent = new KeyboardEvent('keyup', {
+          bubbles: true,
+          cancelable: true
+        });
+        canvasRef.current.dispatchEvent(keyEvent);
+      }
+    }, 50);
   };
 
   return loading ? <p>Loading...</p> : (
     <div className="map">
       <canvas ref={canvasRef}></canvas>
+      <div className="help-indicator">
+        Press H for Help
+      </div>
       
       <ChatWindow
         isOpen={chatOpen}
@@ -254,6 +304,7 @@ export default function WorldPage() {
         onSendMessage={handleSendMessage}
         messages={chatMessages}
         isTyping={isTyping}
+        canvasRef={canvasRef}
       />
     </div>
   );
