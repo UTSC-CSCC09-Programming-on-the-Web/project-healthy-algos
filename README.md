@@ -7,6 +7,10 @@
 ## Deployed URL
 - [i-sim.app](https://i-sim.app/)
 
+## Youtube Video
+- https://drive.google.com/file/d/1qlabGHpzoc_Z2C0a7vSH8POCJKjuRdR3/view?usp=sharing
+- https://www.youtube.com/watch?v=5hvS46HYamE
+
 ## Description
 A sandbox-style simulation with 4 autonomous AI agents and a player that co-exist and interact in real-time on a 2D plane. 
 Bots behave realistically with respect to unique personalities and perform actions at intervals, controlled by a language model. 
