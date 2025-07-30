@@ -173,10 +173,10 @@ export class AIAgent extends BaseCharacter {
     
     return this.performAction(currentAction);
   }
+  
   performAction(action) {
     const currentTime = Date.now();
-    
-    // Initialize action start time if not set
+
     if (!this.currentActionStartTime) {
       this.currentActionStartTime = currentTime;
     }
@@ -186,7 +186,12 @@ export class AIAgent extends BaseCharacter {
     // Check if action is completed
     if (elapsed >= action.duration) {
       action.completed = true;
-      this.currentActionStartTime = currentTime; // Reset for next action
+      this.currentActionStartTime = currentTime; 
+      
+      if (this.isPerformingAction) {
+        this.isPerformingAction = false;
+      }
+      
       return IDLE_MOVEMENT;
     }
     
