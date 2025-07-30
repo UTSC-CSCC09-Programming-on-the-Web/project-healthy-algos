@@ -25,6 +25,18 @@ class BaseCharacter {
 
     this.setPosition(this.prevPos.x, this.prevPos.y);
   }
+
+  updateSpriteLayers() {
+    Object.entries(this.sprites).forEach(([key, sprite]) => {
+      if (!sprite) return;
+      const isHair = key.toLowerCase().includes("hair");
+      sprite.z = this.position.y + (isHair ? 1 : 0);
+    });
+
+    if (this.toolSprite) {
+      this.toolSprite.z = this.position.y + 2;
+    }
+  }
   
   createSprites(spriteConfig) {
     // { idle: { base: "name", hair: "name" }, walk: { base: "name", hair: "name" }, attack: { base: "name", hair: "name" }, ... }
@@ -144,21 +156,17 @@ class BaseCharacter {
   }
 
   updatePosition(deltaX, deltaY) {
-  this.position.x += deltaX;
-  this.position.y += deltaY;
+    this.position.x += deltaX;
+    this.position.y += deltaY;
 
-  Object.entries(this.sprites).forEach(([key, sprite]) => {
-    if (!sprite) return;
+    Object.entries(this.sprites).forEach(([key, sprite]) => {
+      if (!sprite) return;
 
-    sprite.pos.x = this.position.x;
-    sprite.pos.y = this.position.y;
+      sprite.pos.x = this.position.x;
+      sprite.pos.y = this.position.y;
 
-    // Ensure hair is layered above base
-    const isHair = key.toLowerCase().includes("hair");
-    sprite.z = this.position.y + (isHair ? 1 : 0);
-  });
-
-  // console.log("👣 Updated pos:", this.position);
+      this.updateSpriteLayers();
+    });
 }
 
   // Update facing direction and flip sprites accordingly
@@ -360,6 +368,7 @@ class BaseCharacter {
       // Fallback to idle if animation doesn't exist
       this.switchToIdle();
     }
+    this.updateSpriteLayers();
   }
 }
 
