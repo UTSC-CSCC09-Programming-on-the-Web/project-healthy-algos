@@ -30,7 +30,7 @@ const chatSessions = new Map();
 const recentActions = new Map();
 
 // Valid action animations for AI sequences
-const VALID_ACTION_ANIMATIONS = ["ATTACK", "AXE", "DIG", "HAMMERING", "idle", "JUMP", "MINING", "REELING", "WATERING"];
+const VALID_ACTION_ANIMATIONS = ["ATTACK", "AXE", "DIG", "HAMMERING", "JUMP", "MINING", "REELING", "WATERING"];
 
 // Helper function to calculate distance from a position to center
 function distanceToCenter(position, mapBounds) {
@@ -259,8 +259,8 @@ STRICT RULES:
 - Include exactly 2 "move" actions
 - Include exactly 4 action animations from: ${JSON.stringify(VALID_ACTION_ANIMATIONS)}
 - Choose DIFFERENT action animations each time - vary your selections for interesting gameplay
-- Prefer diverse actions: if you used ATTACK before, try DIG, WATERING, AXE, HAMMERING, JUMP, idle, or REELING next time
-- action: "move" or any of the action animations above (including "idle" for staying in place)
+- Prefer diverse actions: if you used ATTACK before, try DIG, WATERING, AXE, HAMMERING, JUMP, or REELING next time
+- action: "move" or any of the action animations above
 - For "move": include "direction" field as array of directions (ALWAYS use array format, even for single direction)
 - Valid directions: ["north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest"]
 - Single direction example: {"action": "move", "direction": ["north"], "duration": 5}
@@ -375,13 +375,13 @@ AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: ($
       return {
         sequence: [
           { action: "JUMP", duration: 10 },
-          { action: "idle", duration: 10 },
+          { action: "DIG", duration: 10 },
           { action: "JUMP", duration: 10 },
-          { action: "idle", duration: 10 },
+          { action: "WATERING", duration: 10 },
           { action: "JUMP", duration: 10 },
-          { action: "idle", duration: 10 }
+          { action: "MINING", duration: 10 }
         ],
-        reasoning: "API parse error fallback - alternating jump and idle for easy error detection"
+        reasoning: "API parse error fallback - diverse actions for easy error detection"
       };
     }
     
@@ -390,13 +390,13 @@ AI at (${gameContext.aiPosition.x}, ${gameContext.aiPosition.y}). Map center: ($
     return {
       sequence: [
         { action: "JUMP", duration: 10 },
-        { action: "idle", duration: 10 },
+        { action: "DIG", duration: 10 },
         { action: "JUMP", duration: 10 },
-        { action: "idle", duration: 10 },
+        { action: "WATERING", duration: 10 },
         { action: "JUMP", duration: 10 },
-        { action: "idle", duration: 10 }
+        { action: "MINING", duration: 10 }
       ],
-      reasoning: "API error fallback - alternating jump and idle for easy error detection"
+      reasoning: "API error fallback - diverse actions for easy error detection"
     };
   }
 }

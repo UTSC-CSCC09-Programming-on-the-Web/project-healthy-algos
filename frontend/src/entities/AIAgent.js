@@ -199,10 +199,6 @@ export class AIAgent extends BaseCharacter {
         return DirectionSystem.getMovementFromDirection(directionToUse);
       }
       
-      case "idle": {
-        return IDLE_MOVEMENT;
-      }
-      
       case "ATTACK":
       case "AXE":
       case "DIG":
